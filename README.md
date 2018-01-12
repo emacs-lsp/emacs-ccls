@@ -2,7 +2,11 @@
 
 emacs-cquery is a client for [cquery](https://github.com/jacobdufault/cquery), a low-latency language server supporting multi-million line C++ code-bases, powered by libclang.
 
-It leverages [lsp-mode](https://github.com/emacs-lsp/lsp-mode), but also provides some cquery extensions to LSP (e.g. `$cquery/base` `$cquery/callers` `$cquery/derived` `$cquery/vars`).
+It leverages [lsp-mode](https://github.com/emacs-lsp/lsp-mode), but also provides some cquery extensions to LSP:
+
+* semantic highlighting
+* inactive region (e.g. a `#if false` region)
+* cross references: `$cquery/base` `$cquery/callers` `$cquery/derived` `$cquery/vars`
 
 ## Quickstart
 

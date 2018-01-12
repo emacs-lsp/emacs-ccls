@@ -3,11 +3,11 @@
 ;; Copyright (C) 2017 Tobias Pisani
 
 ;; Author:  Tobias Pisani
-;; Package-Version: 20171122.1
+;; Package-Version: 20180111.1
 ;; Version: 0.1
 ;; Homepage: https://github.com/jacobdufault/cquery
-;; Package-Requires: ((emacs "25") (lsp-mode "3.0"))
-;; Keywords: languages, lsp-mode, c++
+;; Package-Requires: ((emacs "25.1") (lsp-mode "3.0"))
+;; Keywords: languages, lsp, c++
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,7 @@
 
 (defcustom cquery-executable
   "cquery"
-  "cquery executable filename"
+  "Path of the cquery executable."
   :type 'file
   :group 'cquery)
 
@@ -70,7 +70,7 @@
 (defcustom cquery-indexer-count
   0
   "Number of workers cquery will use to index each project.
- When left at 0, cquery will computer this value automatically."
+When left at 0, cquery will computer this value automatically."
   :type 'number
   :group 'cquery)
 
@@ -128,22 +128,22 @@
 
 (defcustom cquery-enable-sem-highlight
   t
-  "Enable semantic highlighting"
+  "Enable semantic highlighting."
   :type 'boolean
   :group 'cquery)
 
 (defcustom cquery-sem-highlight-method
   'overlay
-  "The method used to draw semantic highlighting. overlays are more
- accurate than font-lock, but slower."
+  "The method used to draw semantic highlighting.
+overlays are more accurate than font-lock, but slower."
   :group 'lsp-mode
   :type 'symbol
   :options '(overlay font-lock))
 
 (defcustom cquery-cache-dir
   ".vscode/cquery_cached_index/"
-  "Directory in which cquery will store its index cache. Relative
- to the project root directory."
+  "Directory in which cquery will store its index cache.
+Relative to the project root directory."
   :type 'string
   :group 'cquery)
 
@@ -152,6 +152,7 @@
 ;; ---------------------------------------------------------------------
 
 (defun cquery--clear-sem-highlights ()
+  "."
   (pcase cquery-sem-highlight-method
     ('overlay
      (dolist (ov (overlays-in (point-min) (point-max)))
@@ -161,6 +162,7 @@
      (font-lock-ensure))))
 
 (defun cquery--make-sem-highlight (region buffer face)
+  "."
   (pcase cquery-sem-highlight-method
     ('overlay
      (let ((ov (make-overlay (car region) (cdr region) buffer)))
@@ -170,6 +172,7 @@
      (put-text-property (car region) (cdr region) 'font-lock-face face buffer))))
 
 (defun cquery--publish-semantic-highlighting (_workspace params)
+  "."
   (when cquery-enable-sem-highlight
     (let* ((file (cquery--uri-to-file (gethash "uri" params)))
            (buffer (find-buffer-visiting file))
@@ -197,11 +200,13 @@
 ;; ---------------------------------------------------------------------
 
 (defun cquery--clear-inactive-regions ()
+  "."
   (dolist (ov (overlays-in (point-min) (point-max)))
     (when (overlay-get ov 'cquery-inactive)
       (delete-overlay ov))))
 
 (defun cquery--set-inactive-regions (_workspace params)
+  "Put overlays on (preprocessed) inactive regions."
   (let* ((file (cquery--uri-to-file (gethash "uri" params)))
          (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
          (buffer (find-buffer-visiting file)))
@@ -230,9 +235,10 @@
 
 (defun cquery-xref-find-custom (method &optional display-action)
   "Find cquery-specific cross references.
+
 Choices of METHOD include \"$cquery/base\", \"$cquery/callers\",
 \"$cquery/derived\", \"$cquery/vars\".
-Read document for all choices."
+Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
   (lsp--cur-workspace-check)
   (let ((xrefs (lsp--locations-to-xref-items
                 (lsp--send-request
@@ -259,7 +265,7 @@ Read document for all choices."
 ;; ---------------------------------------------------------------------
 
 (defun cquery-request-code-lens ()
-  "Request code lens from cquery"
+  "Request code lens from cquery."
   (interactive)
   (lsp--cur-workspace-check)
   (lsp--send-request-async
@@ -268,7 +274,7 @@ Read document for all choices."
    'cquery--code-lens-callback))
 
 (defun cquery-clear-code-lens ()
-  "Clear all code lenses from this buffer"
+  "Clear all code lenses from this buffer."
   (interactive)
   (dolist (ov (overlays-in (point-min) (point-max)))
     (when (overlay-get ov 'cquery-code-lens)
@@ -285,6 +291,7 @@ Read document for all choices."
     (cquery-clear-code-lens)))
 
 (defun cquery--make-code-lens-string (command)
+  "."
   (let ((map (make-sparse-keymap)))
     (define-key map [mouse-1] (lambda () (interactive) (cquery-execute-command command)))
     (propertize (gethash "title" command)
@@ -293,6 +300,7 @@ Read document for all choices."
                 'local-map map)))
 
 (defun cquery--code-lens-callback (result)
+  "."
   (overlay-recenter (point-max))
   (cquery-clear-code-lens)
   (let (buffers)
@@ -318,7 +326,7 @@ Read document for all choices."
 ;; ---------------------------------------------------------------------
 
 (defun cquery-select-codeaction ()
-  "Show a list of codeactions using ivy, and pick one to apply"
+  "Show a list of codeactions using ivy, and pick one to apply."
   (interactive)
   (let ((name-func
          (lambda (action)
@@ -339,7 +347,7 @@ Read document for all choices."
                               (lsp--text-document-code-action))))))))
 
 (defun cquery--execute-command (command &optional arguments)
-  "Execute a cquery command"
+  "Execute a cquery command."
   (let* ((uri (car arguments))
          (data (cdr arguments)))
     (save-current-buffer
