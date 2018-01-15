@@ -229,6 +229,34 @@ Relative to the project root directory."
                    (dolist (range ranges)
                      (cquery--make-sem-highlight range buffer face))))))))))))
 
+(defmacro cquery-use-default-rainbow-sem-highlight ()
+  (require 'dash)  ; for --map-indexed
+
+  (let ((func '("#e5b124" "#927754" "#eb992c" "#e2bf8f" "#d67c17"
+                "#88651e" "#e4b953" "#a36526" "#b28927" "#d69855"))
+        (var '("#587d87" "#26cdca" "#397797" "#57c2cc" "#306b72"
+               "#6cbcdf" "#368896" "#3ea0d2" "#48a5af" "#7ca6b7"))
+        (type '("#e1afc3" "#d533bb" "#9b677f" "#e350b6" "#a04360"
+                "#dd82bc" "#de3864" "#ad3f87" "#dd7a90" "#e0438a")))
+    `(progn
+       ,@(apply #'append (--map-indexed
+                          `((defface ,(intern (format "cquery-sem-free-func-face-%S" it-index)) '((t :foreground ,it)) ".")
+                            (defface ,(intern (format "cquery-sem-member-func-face-%S" it-index)) '((t :slant italic :foreground ,it)) "."))
+                          func))
+       (setq cquery-sem-free-func-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-free-func-face-%S" i)))))
+       (setq cquery-sem-member-func-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-member-func-face-%S" i)))))
+       ,@(apply #'append (--map-indexed
+                          `((defface ,(intern (format "cquery-sem-free-var-face-%S" it-index)) '((t :foreground ,it)) ".")
+                            (defface ,(intern (format "cquery-sem-member-var-face-%S" it-index)) '((t :slant italic :foreground ,it)) "."))
+                          var))
+       (setq cquery-sem-free-var-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-free-var-face-%S" i)))))
+       (setq cquery-sem-member-var-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-member-var-face-%S" i)))))
+       ,@(--map-indexed
+          `(defface ,(intern (format "cquery-sem-type-face-%S" it-index)) '((t :foreground ,it)) ".")
+          type)
+       (setq cquery-sem-type-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-type-face-%S" i)))))
+       )))
+
 ;; ---------------------------------------------------------------------
 ;;   Inactive regions
 ;; ---------------------------------------------------------------------
