@@ -231,16 +231,32 @@ Relative to the project root directory."
                        (lo (/ (* lo0 n) 1000))
                        (hi (/ (* hi0 n) 1000)))
                   (elt faces
-                       (if (= lo hi) lo (+ lo (% stable-id (- hi lo))))))))
+                       (if (= lo hi) (1- hi) (+ lo (% stable-id (- hi lo))))))))
          (fn (lambda (faces) (elt faces (% stable-id (length faces))))))
     ;; cquery/src/indexer.h ClangSymbolKind
     ;; clang/Index/IndexSymbol.h clang::index::SymbolKind
     (pcase kind
-      (4 (funcall fn0 cquery-sem-free-var-faces 700 800)) ; Macro
-      (13 (funcall fn0 cquery-sem-free-var-faces 0 700)) ; Variable TODO Parameter
-      (14 (funcall fn0 cquery-sem-member-var-faces 0 600)) ; Field
-      (15 (funcall fn0 cquery-sem-member-var-faces 600 800)) ; EnumConstant
-      (21 (funcall fn0 cquery-sem-member-var-faces 800 1000)) ; StaticProperty
+      ;; var
+      (4 (funcall fn0 cquery-sem-free-var-faces 600 700)) ; Macro
+      (13 (funcall fn0 cquery-sem-free-var-faces 0 600)) ; Variable
+      (25 (funcall fn0 cquery-sem-free-var-faces 700 1000)) ; Parameter
+      (14 (funcall fn0 cquery-sem-member-var-faces 400 1000)) ; Field
+      (15 (funcall fn0 cquery-sem-member-var-faces 200 400)) ; EnumConstant
+      (21 (funcall fn0 cquery-sem-member-var-faces 0 200)) ; StaticProperty
+
+      ;; func
+      (12 (funcall fn0 cquery-sem-free-func-faces 0 800)) ; Function
+      (18 (funcall fn0 cquery-sem-free-func-faces 800 1000)) ; StaticMethod
+      (22 (funcall fn0 cquery-sem-member-func-faces 800 1000)) ; Constructor
+      (23 (funcall fn0 cquery-sem-member-func-faces 1000 1000)) ; Destructor
+      (24 (funcall fn0 cquery-sem-member-func-faces 1000 1000)) ; ConversionFunction
+      (16 (funcall fn0 cquery-sem-member-func-faces 0 800)) ; InstanceMethod
+
+      ;; type
+      ((or 6 7) (funcall fn0 cquery-sem-type-faces 0 700)) ; Struct | Class
+      (10 (funcall fn0 cquery-sem-type-faces 1000 1000)) ; Union
+      (11 (funcall fn0 cquery-sem-type-faces 700 1000)) ; TypeAlias
+
       (_ (pcase type
            (0 (funcall fn cquery-sem-type-faces))
            (1 (if is-type-member
