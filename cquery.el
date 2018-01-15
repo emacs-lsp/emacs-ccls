@@ -3,10 +3,10 @@
 ;; Copyright (C) 2017 Tobias Pisani
 
 ;; Author:  Tobias Pisani
-;; Package-Version: 20180111.1
+;; Package-Version: 20180115.1
 ;; Version: 0.1
 ;; Homepage: https://github.com/jacobdufault/cquery
-;; Package-Requires: ((emacs "25.1") (lsp-mode "3.0"))
+;; Package-Requires: ((emacs "25.1") (lsp-mode "3.4") (dash "0.13"))
 ;; Keywords: languages, lsp, c++
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -90,6 +90,9 @@ When left at 0, cquery will computer this value automatically."
   '((t :foreground "#666666"))
   "The face used to mark inactive regions"
   :group 'cquery)
+
+(defvar cquery-sem-face-function 'cquery-sem--default-face
+  "A function used to determinate the face of a symbol.")
 
 (defface cquery-sem-type-face
   '((t :weight bold :inherit font-lock-type-face))
@@ -217,9 +220,35 @@ Relative to the project root directory."
     ('font-lock
      (put-text-property (car region) (cdr region) 'font-lock-face face buffer))))
 
-(defun cquery--get-face (faces stable-id)
+(defun cquery-sem--default-face (symbol)
   "."
-  (elt faces (% stable-id (length faces))))
+  (let* ((type (gethash "type" symbol))
+         (kind (gethash "kind" symbol))
+         (stable-id (gethash "stableId" symbol))
+         (is-type-member (gethash "isTypeMember" symbol))
+         (fn0 (lambda (faces lo0 hi0)
+                (let* ((n (length faces))
+                       (lo (/ (* lo0 n) 1000))
+                       (hi (/ (* hi0 n) 1000)))
+                  (elt faces
+                       (if (= lo hi) lo (+ lo (% stable-id (- hi lo))))))))
+         (fn (lambda (faces) (elt faces (% stable-id (length faces))))))
+    ;; cquery/src/indexer.h ClangSymbolKind
+    ;; clang/Index/IndexSymbol.h clang::index::SymbolKind
+    (pcase kind
+      (4 (funcall fn0 cquery-sem-free-var-faces 700 800)) ; Macro
+      (13 (funcall fn0 cquery-sem-free-var-faces 0 700)) ; Variable TODO Parameter
+      (14 (funcall fn0 cquery-sem-member-var-faces 0 600)) ; Field
+      (15 (funcall fn0 cquery-sem-member-var-faces 600 800)) ; EnumConstant
+      (21 (funcall fn0 cquery-sem-member-var-faces 800 1000)) ; StaticProperty
+      (_ (pcase type
+           (0 (funcall fn cquery-sem-type-faces))
+           (1 (if is-type-member
+                  (funcall fn cquery-sem-member-func-faces)
+                (funcall fn cquery-sem-free-func-faces)))
+           (2 (if is-type-member
+                  (funcall fn cquery-sem-member-var-faces)
+                (funcall fn cquery-sem-free-var-faces))))))))
 
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "."
@@ -233,22 +262,10 @@ Relative to the project root directory."
            (with-silent-modifications
              (cquery--clear-sem-highlights)
              (dolist (symbol symbols)
-               (let* ((type (gethash "type" symbol))
-                      (stable-id (gethash "stableId" symbol))
-                      (is-type-member (gethash "isTypeMember" symbol))
-                      (ranges (mapcar 'cquery--read-range (gethash "ranges" symbol)))
-                      (face
-                       (pcase type
-                         ('0 (cquery--get-face cquery-sem-type-faces stable-id))
-                         ('1 (if is-type-member
-                                 (cquery--get-face cquery-sem-member-func-faces stable-id)
-                               (cquery--get-face cquery-sem-free-func-faces stable-id)))
-                         ('2 (if is-type-member
-                                 (cquery--get-face cquery-sem-member-var-faces stable-id)
-                               (cquery--get-face cquery-sem-free-var-faces stable-id))))))
-                 (when face
-                   (dolist (range ranges)
-                     (cquery--make-sem-highlight range buffer face))))))))))))
+               (-when-let (face (funcall cquery-sem-face-function symbol))
+                 (dolist (range
+                          (mapcar 'cquery--read-range (gethash "ranges" symbol)))
+                     (cquery--make-sem-highlight range buffer face)))))))))))
 
 (defmacro cquery-use-default-rainbow-sem-highlight ()
   (require 'dash)  ; for --map-indexed
