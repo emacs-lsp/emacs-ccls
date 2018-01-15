@@ -96,9 +96,19 @@ When left at 0, cquery will computer this value automatically."
   "The face used to mark types"
   :group 'cquery)
 
+(defcustom cquery-sem-type-faces [cquery-sem-type-face]
+  "."
+  :type '(repeat face)
+  :group 'cquery)
+
 (defface cquery-sem-member-func-face
   '((t :slant italic :inherit font-lock-function-name-face))
   "The face used to mark member functions"
+  :group 'cquery)
+
+(defcustom cquery-sem-member-func-faces [cquery-sem-member-func-face]
+  "."
+  :type '(repeat face)
   :group 'cquery)
 
 (defface cquery-sem-free-func-face
@@ -106,14 +116,29 @@ When left at 0, cquery will computer this value automatically."
   "The face used to mark free functions"
   :group 'cquery)
 
+(defcustom cquery-sem-free-func-faces [cquery-sem-free-func-face]
+  "."
+  :type '(repeat face)
+  :group 'cquery)
+
 (defface cquery-sem-member-var-face
   '((t :slant italic :inherit font-lock-variable-name-face))
   "The face used to mark member variables"
   :group 'cquery)
 
+(defcustom cquery-sem-member-var-faces [cquery-sem-member-var-face]
+  "."
+  :type '(repeat face)
+  :group 'cquery)
+
 (defface cquery-sem-free-var-face
   '((t :inherit font-lock-variable-name-face))
   "The face used to mark local and namespace scope variables"
+  :group 'cquery)
+
+(defcustom cquery-sem-free-var-faces [cquery-sem-free-var-face]
+  "."
+  :type '(repeat face)
   :group 'cquery)
 
 (defface cquery-code-lens-face
@@ -171,6 +196,10 @@ Relative to the project root directory."
     ('font-lock
      (put-text-property (car region) (cdr region) 'font-lock-face face buffer))))
 
+(defun cquery--get-face (faces stable-id)
+  "."
+  (elt faces (% stable-id (length faces))))
+
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "."
   (when cquery-enable-sem-highlight
@@ -184,13 +213,18 @@ Relative to the project root directory."
              (cquery--clear-sem-highlights)
              (dolist (symbol symbols)
                (let* ((type (gethash "type" symbol))
+                      (stable-id (gethash "stableId" symbol))
                       (is-type-member (gethash "isTypeMember" symbol))
                       (ranges (mapcar 'cquery--read-range (gethash "ranges" symbol)))
                       (face
                        (pcase type
-                         ('0 'cquery-sem-type-face)
-                         ('1 (if is-type-member 'cquery-sem-member-func-face 'cquery-sem-free-func-face))
-                         ('2 (if is-type-member 'cquery-sem-member-var-face 'cquery-sem-free-var-face)))))
+                         ('0 (cquery--get-face cquery-sem-type-faces stable-id))
+                         ('1 (if is-type-member
+                                 (cquery--get-face cquery-sem-member-func-faces stable-id)
+                               (cquery--get-face cquery-sem-free-func-faces stable-id)))
+                         ('2 (if is-type-member
+                                 (cquery--get-face cquery-sem-member-var-faces stable-id)
+                               (cquery--get-face cquery-sem-free-var-faces stable-id))))))
                  (when face
                    (dolist (range ranges)
                      (cquery--make-sem-highlight range buffer face))))))))))))
