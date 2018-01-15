@@ -141,6 +141,27 @@ When left at 0, cquery will computer this value automatically."
   :type '(repeat face)
   :group 'cquery)
 
+(defcustom cquery-rainbow-sem-type-colors
+  '("#e1afc3" "#d533bb" "#9b677f" "#e350b6" "#a04360"
+    "#dd82bc" "#de3864" "#ad3f87" "#dd7a90" "#e0438a")
+  "Rainbow type colors."
+  :type '(repeat string)
+  :group 'cquery)
+
+(defcustom cquery-rainbow-sem-func-colors
+  '("#e5b124" "#927754" "#eb992c" "#e2bf8f" "#d67c17"
+    "#88651e" "#e4b953" "#a36526" "#b28927" "#d69855")
+  "Rainbow func colors."
+  :type '(repeat string)
+  :group 'cquery)
+
+(defcustom cquery-rainbow-sem-var-colors
+  '("#587d87" "#26cdca" "#397797" "#57c2cc" "#306b72"
+    "#6cbcdf" "#368896" "#3ea0d2" "#48a5af" "#7ca6b7")
+  "Rainbow var colors."
+  :type '(repeat string)
+  :group 'cquery)
+
 (defface cquery-code-lens-face
   '((t :foreground "#777777"))
   "The face used for code lens overlays"
@@ -231,31 +252,44 @@ Relative to the project root directory."
 
 (defmacro cquery-use-default-rainbow-sem-highlight ()
   (require 'dash)  ; for --map-indexed
+  `(progn
+     ;; type
+     ,@(--map-indexed
+        `(defface ,(intern (format "cquery-sem-type-face-%S" it-index))
+           '((t :foreground ,it)) ".")
+        cquery-rainbow-sem-type-colors)
+     (setq cquery-sem-type-faces
+           (apply #'vector (loop for i to 10 collect
+                                 (intern (format "cquery-sem-type-face-%S" i)))))
 
-  (let ((func '("#e5b124" "#927754" "#eb992c" "#e2bf8f" "#d67c17"
-                "#88651e" "#e4b953" "#a36526" "#b28927" "#d69855"))
-        (var '("#587d87" "#26cdca" "#397797" "#57c2cc" "#306b72"
-               "#6cbcdf" "#368896" "#3ea0d2" "#48a5af" "#7ca6b7"))
-        (type '("#e1afc3" "#d533bb" "#9b677f" "#e350b6" "#a04360"
-                "#dd82bc" "#de3864" "#ad3f87" "#dd7a90" "#e0438a")))
-    `(progn
-       ,@(apply #'append (--map-indexed
-                          `((defface ,(intern (format "cquery-sem-free-func-face-%S" it-index)) '((t :foreground ,it)) ".")
-                            (defface ,(intern (format "cquery-sem-member-func-face-%S" it-index)) '((t :slant italic :foreground ,it)) "."))
-                          func))
-       (setq cquery-sem-free-func-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-free-func-face-%S" i)))))
-       (setq cquery-sem-member-func-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-member-func-face-%S" i)))))
-       ,@(apply #'append (--map-indexed
-                          `((defface ,(intern (format "cquery-sem-free-var-face-%S" it-index)) '((t :foreground ,it)) ".")
-                            (defface ,(intern (format "cquery-sem-member-var-face-%S" it-index)) '((t :slant italic :foreground ,it)) "."))
-                          var))
-       (setq cquery-sem-free-var-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-free-var-face-%S" i)))))
-       (setq cquery-sem-member-var-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-member-var-face-%S" i)))))
-       ,@(--map-indexed
-          `(defface ,(intern (format "cquery-sem-type-face-%S" it-index)) '((t :foreground ,it)) ".")
-          type)
-       (setq cquery-sem-type-faces (apply #'vector (loop for i to 10 collect (intern (format "cquery-sem-type-face-%S" i)))))
-       )))
+     ;; func
+     ,@(apply #'append (--map-indexed
+                        `((defface ,(intern (format "cquery-sem-free-func-face-%S" it-index))
+                            '((t :foreground ,it)) ".")
+                          (defface ,(intern (format "cquery-sem-member-func-face-%S" it-index))
+                            '((t :slant italic :foreground ,it)) "."))
+                        cquery-rainbow-sem-func-colors))
+     (setq cquery-sem-free-func-faces
+           (apply #'vector (loop for i to 10 collect
+                                 (intern (format "cquery-sem-free-func-face-%S" i)))))
+     (setq cquery-sem-member-func-faces
+           (apply #'vector (loop for i to 10 collect
+                                 (intern (format "cquery-sem-member-func-face-%S" i)))))
+
+     ;; var
+     ,@(apply #'append (--map-indexed
+                        `((defface ,(intern (format "cquery-sem-free-var-face-%S" it-index))
+                            '((t :foreground ,it)) ".")
+                          (defface ,(intern (format "cquery-sem-member-var-face-%S" it-index))
+                            '((t :slant italic :foreground ,it)) "."))
+                        cquery-rainbow-sem-var-colors))
+     (setq cquery-sem-free-var-faces
+           (apply #'vector (loop for i to 10 collect
+                                 (intern (format "cquery-sem-free-var-face-%S" i)))))
+     (setq cquery-sem-member-var-faces
+           (apply #'vector (loop for i to 10 collect
+                                 (intern (format "cquery-sem-member-var-face-%S" i)))))
+     ))
 
 ;; ---------------------------------------------------------------------
 ;;   Inactive regions
