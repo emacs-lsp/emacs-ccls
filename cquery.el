@@ -186,8 +186,9 @@ When left at 0, cquery will computer this value automatically."
   "The method used to draw semantic highlighting.
 overlays are more accurate than font-lock, but slower."
   :group 'lsp-mode
-  :type 'symbol
-  :options '(overlay font-lock))
+  :type '(radio
+          (const :tag "overlays" overlay)
+          (const :tag "font-lock" font-lock)))
 
 (defcustom cquery-cache-dir
   ".vscode/cquery_cached_index/"
