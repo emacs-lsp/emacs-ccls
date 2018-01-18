@@ -568,7 +568,7 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
   "Return the root directory of a cquery project."
   (expand-file-name (or (locate-dominating-file default-directory "compile_commands.json")
                         (locate-dominating-file default-directory ".cquery")
-                        (user-error "Could not find cquery project root"))))
+                        default-directory)))
 
 (defun cquery--is-cquery-buffer(&optional buffer)
   "Return non-nil if current buffer is using the cquery client"
