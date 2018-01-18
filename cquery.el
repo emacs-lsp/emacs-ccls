@@ -232,7 +232,7 @@ Relative to the project root directory."
                        (lo (/ (* lo0 n) 1000))
                        (hi (/ (* hi0 n) 1000)))
                   (elt faces
-                       (if (= lo hi) (1- hi) (+ lo (% stable-id (- hi lo))))))))
+                       (if (= lo hi) (max (1- hi) 0) (+ lo (% stable-id (- hi lo))))))))
          (fn (lambda (faces) (elt faces (% stable-id (length faces))))))
     ;; cquery/src/indexer.h ClangSymbolKind
     ;; clang/Index/IndexSymbol.h clang::index::SymbolKind
