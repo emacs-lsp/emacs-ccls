@@ -59,14 +59,6 @@
   :type 'file
   :group 'cquery)
 
-(defcustom cquery-resource-dir
-  nil
-  "The clang resource directory."
-  :type '(choice
-          (const :tag "Use default resource directory" :value nil)
-          (directory :tag "Custom resource directory"))
-  :group 'cquery)
-
 (defcustom cquery-extra-args
   nil
   "Additional command line options passed to the cquery executable."
@@ -74,6 +66,13 @@
   :group 'cquery)
 
 (defalias 'cquery-additional-arguments 'cquery-extra-args)
+
+(defcustom cquery-cache-dir
+  ".vscode/cquery_cached_index/"
+  "Directory in which cquery will store its index cache.
+Relative to the project root directory."
+  :type 'string
+  :group 'cquery)
 
 (defcustom cquery-extra-init-params
   nil
@@ -87,7 +86,7 @@
   :group 'cquery)
 
 (defvar cquery-sem-face-function 'cquery-sem--default-face
-  "A function used to determinate the face of a symbol.")
+  "Function used to determine the face of a symbol in semantic highlighting.")
 
 (defface cquery-sem-type-face
   '((t :weight bold :inherit font-lock-type-face))
@@ -184,13 +183,6 @@ overlays are more accurate than font-lock, but slower."
   :type '(radio
           (const :tag "overlays" overlay)
           (const :tag "font-lock" font-lock)))
-
-(defcustom cquery-cache-dir
-  ".vscode/cquery_cached_index/"
-  "Directory in which cquery will store its index cache.
-Relative to the project root directory."
-  :type 'string
-  :group 'cquery)
 
 ;; ---------------------------------------------------------------------
 ;;   Semantic highlighting
@@ -551,13 +543,9 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
   (lsp-provide-marked-string-renderer client "objectivec" (cquery--make-renderer "objc")))
 
 (defun cquery--get-init-params (workspace)
-  (let ((json-false :json-false))
-    `(:cacheDirectory ,(file-name-as-directory
-                        (expand-file-name cquery-cache-dir (lsp--workspace-root workspace)))
-                      ,@(when cquery-resource-dir
-                          `(:resourceDirectory ,(expand-file-name cquery-resource-dir)))
-                      :enableProgressReports ,json-false
-                      ,@cquery-extra-init-params))) ; TODO: prog reports for modeline
+  `(:cacheDirectory ,(file-name-as-directory
+                      (expand-file-name cquery-cache-dir (lsp--workspace-root workspace)))
+                    ,@cquery-extra-init-params)) ; TODO: prog reports for modeline
 
 (defun cquery--get-root ()
   "Return the root directory of a cquery project."
