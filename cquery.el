@@ -67,18 +67,13 @@
           (directory :tag "Custom resource directory"))
   :group 'cquery)
 
-(defcustom cquery-indexer-count
-  0
-  "Number of workers cquery will use to index each project.
-When left at 0, cquery will computer this value automatically."
-  :type 'number
-  :group 'cquery)
-
-(defcustom cquery-additional-arguments
+(defcustom cquery-extra-args
   nil
-  "Additional arguments passed to cquery."
+  "Additional command line options passed to the cquery executable."
   :type 'list
   :group 'cquery)
+
+(defalias 'cquery-additional-arguments 'cquery-extra-args)
 
 (defcustom cquery-extra-init-params
   nil
@@ -87,8 +82,8 @@ When left at 0, cquery will computer this value automatically."
   :group 'cquery)
 
 (defface cquery-inactive-region-face
-  '((t :foreground "#666666"))
-  "The face used to mark inactive regions"
+  '((t :inherit shadow))
+  "The face used to mark inactive regions."
   :group 'cquery)
 
 (defvar cquery-sem-face-function 'cquery-sem--default-face
@@ -96,83 +91,83 @@ When left at 0, cquery will computer this value automatically."
 
 (defface cquery-sem-type-face
   '((t :weight bold :inherit font-lock-type-face))
-  "The face used to mark types"
+  "The default face in cquery-sem-type-faces."
   :group 'cquery)
 
 (defcustom cquery-sem-type-faces [cquery-sem-type-face]
-  "."
+  "Faces used to mark types."
   :type '(repeat face)
   :group 'cquery)
 
 (defface cquery-sem-member-func-face
   '((t :slant italic :inherit font-lock-function-name-face))
-  "The face used to mark member functions"
+  "The default face in cquery-sem-member-func-faces."
   :group 'cquery)
 
 (defcustom cquery-sem-member-func-faces [cquery-sem-member-func-face]
-  "."
+  "Faces used to mark member functions."
   :type '(repeat face)
   :group 'cquery)
 
 (defface cquery-sem-free-func-face
   '((t :inherit font-lock-function-name-face))
-  "The face used to mark free functions"
+  "The default face in cquery-sem-free-func-faces."
   :group 'cquery)
 
 (defcustom cquery-sem-free-func-faces [cquery-sem-free-func-face]
-  "."
+  "Faces used to mark free functions."
   :type '(repeat face)
   :group 'cquery)
 
 (defface cquery-sem-member-var-face
   '((t :slant italic :inherit font-lock-variable-name-face))
-  "The face used to mark member variables"
+  "The default face in cquery-sem-member-var-faces."
   :group 'cquery)
 
 (defcustom cquery-sem-member-var-faces [cquery-sem-member-var-face]
-  "."
+  "Faces used to mark member variables."
   :type '(repeat face)
   :group 'cquery)
 
 (defface cquery-sem-free-var-face
   '((t :inherit font-lock-variable-name-face))
-  "The face used to mark local and namespace scope variables"
+  "The default face in cquery-sem-free-var-faces."
   :group 'cquery)
 
 (defcustom cquery-sem-free-var-faces [cquery-sem-free-var-face]
-  "."
+  "Faces used to mark free variables."
   :type '(repeat face)
   :group 'cquery)
 
 (defcustom cquery-rainbow-sem-type-colors
   '("#e1afc3" "#d533bb" "#9b677f" "#e350b6" "#a04360"
     "#dd82bc" "#de3864" "#ad3f87" "#dd7a90" "#e0438a")
-  "Rainbow type colors."
+  "Type colors used in rainbow semantic highlighting."
   :type '(repeat string)
   :group 'cquery)
 
 (defcustom cquery-rainbow-sem-func-colors
   '("#e5b124" "#927754" "#eb992c" "#e2bf8f" "#d67c17"
     "#88651e" "#e4b953" "#a36526" "#b28927" "#d69855")
-  "Rainbow func colors."
+  "Function colors used in rainbow semantic highlighting."
   :type '(repeat string)
   :group 'cquery)
 
 (defcustom cquery-rainbow-sem-var-colors
   '("#587d87" "#26cdca" "#397797" "#57c2cc" "#306b72"
     "#6cbcdf" "#368896" "#3ea0d2" "#48a5af" "#7ca6b7")
-  "Rainbow var colors."
+  "Variable colors used in rainbow semantic highlighting."
   :type '(repeat string)
   :group 'cquery)
 
 (defface cquery-code-lens-face
-  '((t :foreground "#777777"))
-  "The face used for code lens overlays"
+  '((t :inherit shadow))
+  "The face used for code lens overlays."
   :group 'cquery)
 
 (defface cquery-code-lens-mouse-face
   '((t :box t))
-  "The face used for code lens overlays"
+  "The face used for code lens overlays."
   :group 'cquery)
 
 (defcustom cquery-enable-sem-highlight
@@ -212,7 +207,7 @@ Relative to the project root directory."
      (font-lock-ensure))))
 
 (defun cquery--make-sem-highlight (region buffer face)
-  "."
+  "Highlight a REGION in BUFFER with FACE."
   (pcase cquery-sem-highlight-method
     ('overlay
      (let ((ov (make-overlay (car region) (cdr region) buffer)))
@@ -222,7 +217,7 @@ Relative to the project root directory."
      (put-text-property (car region) (cdr region) 'font-lock-face face buffer))))
 
 (defun cquery-sem--default-face (symbol)
-  "."
+  "Get semantic highlighting face of SYMBOL."
   (let* ((type (gethash "type" symbol))
          (kind (gethash "kind" symbol))
          (stable-id (gethash "stableId" symbol))
@@ -268,7 +263,7 @@ Relative to the project root directory."
                 (funcall fn cquery-sem-free-var-faces))))))))
 
 (defun cquery--publish-semantic-highlighting (_workspace params)
-  "."
+  "Publish semantic highlighting information according to PARAMS."
   (when cquery-enable-sem-highlight
     (let* ((file (cquery--uri-to-file (gethash "uri" params)))
            (buffer (find-buffer-visiting file))
@@ -285,6 +280,7 @@ Relative to the project root directory."
                      (cquery--make-sem-highlight range buffer face)))))))))))
 
 (defmacro cquery-use-default-rainbow-sem-highlight ()
+  "Use default rainbow semantic highlighting theme."
   (require 'dash)  ; for --map-indexed
   `(progn
      ;; type
@@ -336,7 +332,7 @@ Relative to the project root directory."
       (delete-overlay ov))))
 
 (defun cquery--set-inactive-regions (_workspace params)
-  "Put overlays on (preprocessed) inactive regions."
+  "Put overlays on (preprocessed) inactive regions according to PARAMS."
   (let* ((file (cquery--uri-to-file (gethash "uri" params)))
          (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
          (buffer (find-buffer-visiting file)))
@@ -423,7 +419,7 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
 (defun cquery--make-code-lens-string (command)
   "."
   (let ((map (make-sparse-keymap)))
-    (define-key map [mouse-1] (lambda () (interactive) (cquery-execute-command command)))
+    (define-key map [mouse-1] (lambda () (interactive) (cquery--execute-command command)))
     (propertize (gethash "title" command)
                 'face 'cquery-code-lens-face
                 'mouse-face 'cquery-code-lens-mouse-face
@@ -560,7 +556,6 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
                         (expand-file-name cquery-cache-dir (lsp--workspace-root workspace)))
                       ,@(when cquery-resource-dir
                           `(:resourceDirectory ,(expand-file-name cquery-resource-dir)))
-                      :indexerCount ,cquery-indexer-count
                       :enableProgressReports ,json-false
                       ,@cquery-extra-init-params))) ; TODO: prog reports for modeline
 
@@ -571,7 +566,7 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
                         default-directory)))
 
 (defun cquery--is-cquery-buffer(&optional buffer)
-  "Return non-nil if current buffer is using the cquery client"
+  "Return non-nil if current buffer is using the cquery client."
   (with-current-buffer (or buffer (current-buffer))
     (and lsp--cur-workspace
          (eq (lsp--client-get-root (lsp--workspace-client lsp--cur-workspace)) 'cquery--get-root))))
