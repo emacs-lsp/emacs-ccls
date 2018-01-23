@@ -257,7 +257,7 @@ overlays are more accurate than font-lock, but slower."
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "Publish semantic highlighting information according to PARAMS."
   (when cquery-enable-sem-highlight
-    (let* ((file (cquery--uri-to-file (gethash "uri" params)))
+    (let* ((file (lsp--uri-to-path (gethash "uri" params)))
            (buffer (find-buffer-visiting file))
            (symbols (gethash "symbols" params)))
       (when buffer
@@ -325,7 +325,7 @@ overlays are more accurate than font-lock, but slower."
 
 (defun cquery--set-inactive-regions (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
-  (let* ((file (cquery--uri-to-file (gethash "uri" params)))
+  (let* ((file (lsp--uri-to-path (gethash "uri" params)))
          (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
          (buffer (find-buffer-visiting file)))
     (when buffer
@@ -388,7 +388,7 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
   (lsp--cur-workspace-check)
   (lsp--send-request-async
    (lsp--make-request "textDocument/codeLens"
-                      `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))))
+                      `(:textDocument (:uri ,(lsp--path-to-uri buffer-file-name))))
    'cquery--code-lens-callback))
 
 (defun cquery-clear-code-lens ()
@@ -427,7 +427,7 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
              (root (gethash "command" lens))
              (title (gethash "title" root))
              (command (gethash "command" root))
-             (buffer (find-buffer-visiting (cquery--uri-to-file (car (gethash "arguments" root))))))
+             (buffer (find-buffer-visiting (lsp--uri-to-path (car (gethash "arguments" root))))))
         (when buffer
           (with-current-buffer buffer
             (save-excursion
@@ -469,7 +469,7 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
   (let* ((uri (car arguments))
          (data (cdr arguments)))
     (save-current-buffer
-      (find-file (cquery--uri-to-file uri))
+      (find-file (lsp--uri-to-path uri))
       (pcase command
         ;; Code actions
         ('"cquery._applyFixIt"
@@ -515,9 +515,6 @@ Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
       (delete-region start (- end 1)))
     (goto-char start)
     (insert newText)))
-
-(defun cquery--uri-to-file (uri)
-  (string-remove-prefix lsp--uri-file-prefix uri))
 
 (defun cquery--read-range (range)
   (cons (lsp--position-to-point (gethash "start" range))
