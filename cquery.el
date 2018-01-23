@@ -169,19 +169,22 @@ Relative to the project root directory."
   "The face used for code lens overlays."
   :group 'cquery)
 
-(defcustom cquery-enable-sem-highlight
+(defcustom cquery-enable-inactive-region
   t
-  "Enable semantic highlighting."
-  :type 'boolean
-  :group 'cquery)
+  "Enable inactive region.
+Regions that are disabled by preprocessors will be displayed in shadow."
+  :group 'cquery
+  )
 
 (defcustom cquery-sem-highlight-method
-  'overlay
+  nil
   "The method used to draw semantic highlighting.
-overlays are more accurate than font-lock, but slower."
-  :group 'lsp-mode
+overlays are more accurate than font-lock, but slower.
+If nil, disable semantic highlighting."
+  :group 'cquery
   :type '(radio
-          (const :tag "overlays" overlay)
+          (const nil)
+          (const :tag "overlay" overlay)
           (const :tag "font-lock" font-lock)))
 
 ;; ---------------------------------------------------------------------
@@ -256,7 +259,7 @@ overlays are more accurate than font-lock, but slower."
 
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "Publish semantic highlighting information according to PARAMS."
-  (when cquery-enable-sem-highlight
+  (when cquery-sem-highlight-method
     (let* ((file (lsp--uri-to-path (gethash "uri" params)))
            (buffer (find-buffer-visiting file))
            (symbols (gethash "symbols" params)))
@@ -332,19 +335,22 @@ overlays are more accurate than font-lock, but slower."
       (with-current-buffer buffer
         (save-excursion
           (cquery--clear-inactive-regions)
-          (overlay-recenter (point-max))
-          (dolist (region regions)
-            (let ((ov (make-overlay (car region) (cdr region) buffer)))
-              (overlay-put ov 'face 'cquery-inactive-region-face)
-              (overlay-put ov 'cquery-inactive t))))))))
+          (when cquery-enable-inactive-region
+            (overlay-recenter (point-max))
+            (dolist (region regions)
+              (let ((ov (make-overlay (car region) (cdr region) buffer)))
+                (overlay-put ov 'face 'cquery-inactive-region-face)
+                (overlay-put ov 'cquery-inactive t)))))))))
 
 ;; ---------------------------------------------------------------------
 ;;   Notification handlers
 ;; ---------------------------------------------------------------------
 
 (defconst cquery--handlers
-  '(("$cquery/setInactiveRegions" . (lambda (w p) (cquery--set-inactive-regions w p)))
-    ("$cquery/publishSemanticHighlighting" . (lambda (w p) (cquery--publish-semantic-highlighting w p)))
+  '(("$cquery/setInactiveRegions" .
+     (lambda (w p) (cquery--set-inactive-regions w p)))
+    ("$cquery/publishSemanticHighlighting" .
+     (lambda (w p) (cquery--publish-semantic-highlighting w p)))
     ("$cquery/progress" . (lambda (_w _p)))))
 
 ;; ---------------------------------------------------------------------
