@@ -19,7 +19,7 @@ It leverages [lsp-mode](https://github.com/emacs-lsp/lsp-mode), but also provide
 To enable comments and use Message Pack for cache files (which are stored in `cacheDirectory`):
 
 ```elisp
-(setq cquery-extra-init-params '(:enableComments 2 :cacheFormat "msgpack"))
+(setq cquery-extra-init-params '(:index (:comments 2) :cacheFormat "msgpack"))
 ```
 
 Refer to <https://github.com/jacobdufault/cquery/wiki/Emacs> for details.
