@@ -284,7 +284,7 @@ If nil, disable semantic highlighting."
            '((t :foreground ,it)) ".")
         cquery-rainbow-sem-type-colors)
      (setq cquery-sem-type-faces
-           (apply #'vector (loop for i to 10 collect
+           (apply #'vector (cl-loop for i to 10 collect
                                  (intern (format "cquery-sem-type-face-%S" i)))))
 
      ;; func
@@ -295,10 +295,10 @@ If nil, disable semantic highlighting."
                             '((t :slant italic :foreground ,it)) "."))
                         cquery-rainbow-sem-func-colors))
      (setq cquery-sem-free-func-faces
-           (apply #'vector (loop for i to 10 collect
+           (apply #'vector (cl-loop for i to 10 collect
                                  (intern (format "cquery-sem-free-func-face-%S" i)))))
      (setq cquery-sem-member-func-faces
-           (apply #'vector (loop for i to 10 collect
+           (apply #'vector (cl-loop for i to 10 collect
                                  (intern (format "cquery-sem-member-func-face-%S" i)))))
 
      ;; var
@@ -309,10 +309,10 @@ If nil, disable semantic highlighting."
                             '((t :slant italic :foreground ,it)) "."))
                         cquery-rainbow-sem-var-colors))
      (setq cquery-sem-free-var-faces
-           (apply #'vector (loop for i to 10 collect
+           (apply #'vector (cl-loop for i to 10 collect
                                  (intern (format "cquery-sem-free-var-face-%S" i)))))
      (setq cquery-sem-member-var-faces
-           (apply #'vector (loop for i to 10 collect
+           (apply #'vector (cl-loop for i to 10 collect
                                  (intern (format "cquery-sem-member-var-face-%S" i)))))
      ))
 
