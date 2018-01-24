@@ -62,7 +62,7 @@
 (defcustom cquery-extra-args
   nil
   "Additional command line options passed to the cquery executable."
-  :type 'list
+  :type '(repeat string)
   :group 'cquery)
 
 (defalias 'cquery-additional-arguments 'cquery-extra-args)
@@ -71,7 +71,7 @@
   ".vscode/cquery_cached_index/"
   "Directory in which cquery will store its index cache.
 Relative to the project root directory."
-  :type 'string
+  :type 'directory
   :group 'cquery)
 
 (defcustom cquery-extra-init-params
@@ -142,21 +142,21 @@ Relative to the project root directory."
   '("#e1afc3" "#d533bb" "#9b677f" "#e350b6" "#a04360"
     "#dd82bc" "#de3864" "#ad3f87" "#dd7a90" "#e0438a")
   "Type colors used in rainbow semantic highlighting."
-  :type '(repeat string)
+  :type '(repeat color)
   :group 'cquery)
 
 (defcustom cquery-rainbow-sem-func-colors
   '("#e5b124" "#927754" "#eb992c" "#e2bf8f" "#d67c17"
     "#88651e" "#e4b953" "#a36526" "#b28927" "#d69855")
   "Function colors used in rainbow semantic highlighting."
-  :type '(repeat string)
+  :type '(repeat color)
   :group 'cquery)
 
 (defcustom cquery-rainbow-sem-var-colors
   '("#587d87" "#26cdca" "#397797" "#57c2cc" "#306b72"
     "#6cbcdf" "#368896" "#3ea0d2" "#48a5af" "#7ca6b7")
   "Variable colors used in rainbow semantic highlighting."
-  :type '(repeat string)
+  :type '(repeat color)
   :group 'cquery)
 
 (defface cquery-code-lens-face
@@ -290,21 +290,22 @@ If nil, disable semantic highlighting."
                 (ignore-errors
                   (save-excursion
                     (goto-char (point-min))
-                    (loop for (start end face) in ranges do
-                          (forward-line (- (car start) last-line-number))
-                          (forward-char (cdr start))
-                          ;; start of range
-                          (setq range-start (point))
-                          (forward-line (- (car end) (car start)))
-                          (forward-char (cdr end))
-                          ;; end of range
-                          (setq range-end (point))
-                          (cquery--make-sem-highlight (cons range-start range-end) buffer face)
-                          (setq last-line-number (car end)))))))))))))
+                    (cl-loop
+                     for (start end face) in ranges do
+                     (forward-line (- (car start) last-line-number))
+                     (forward-char (cdr start))
+                     ;; start of range
+                     (setq range-start (point))
+                     (forward-line (- (car end) (car start)))
+                     (forward-char (cdr end))
+                     ;; end of range
+                     (setq range-end (point))
+                     (cquery--make-sem-highlight (cons range-start range-end) buffer face)
+                     (setq last-line-number (car end)))))))))))))
 
 (defmacro cquery-use-default-rainbow-sem-highlight ()
   "Use default rainbow semantic highlighting theme."
-  (require 'dash)  ; for --map-indexed
+  (require 'dash)
   `(progn
      ;; type
      ,@(--map-indexed
@@ -312,8 +313,8 @@ If nil, disable semantic highlighting."
            '((t :foreground ,it)) ".")
         cquery-rainbow-sem-type-colors)
      (setq cquery-sem-type-faces
-           (apply #'vector (cl-loop for i to 10 collect
-                                 (intern (format "cquery-sem-type-face-%S" i)))))
+           (apply #'vector (cl-loop for i below 10 collect
+                                    (intern (format "cquery-sem-type-face-%S" i)))))
 
      ;; func
      ,@(apply #'append (--map-indexed
@@ -323,11 +324,11 @@ If nil, disable semantic highlighting."
                             '((t :slant italic :foreground ,it)) "."))
                         cquery-rainbow-sem-func-colors))
      (setq cquery-sem-free-func-faces
-           (apply #'vector (cl-loop for i to 10 collect
-                                 (intern (format "cquery-sem-free-func-face-%S" i)))))
+           (apply #'vector (cl-loop for i below 10 collect
+                                    (intern (format "cquery-sem-free-func-face-%S" i)))))
      (setq cquery-sem-member-func-faces
-           (apply #'vector (cl-loop for i to 10 collect
-                                 (intern (format "cquery-sem-member-func-face-%S" i)))))
+           (apply #'vector (cl-loop for i below 10 collect
+                                    (intern (format "cquery-sem-member-func-face-%S" i)))))
 
      ;; var
      ,@(apply #'append (--map-indexed
@@ -337,11 +338,11 @@ If nil, disable semantic highlighting."
                             '((t :slant italic :foreground ,it)) "."))
                         cquery-rainbow-sem-var-colors))
      (setq cquery-sem-free-var-faces
-           (apply #'vector (cl-loop for i to 10 collect
-                                 (intern (format "cquery-sem-free-var-face-%S" i)))))
+           (apply #'vector (cl-loop for i below 10 collect
+                                    (intern (format "cquery-sem-free-var-face-%S" i)))))
      (setq cquery-sem-member-var-faces
-           (apply #'vector (cl-loop for i to 10 collect
-                                 (intern (format "cquery-sem-member-var-face-%S" i)))))
+           (apply #'vector (cl-loop for i below 10 collect
+                                    (intern (format "cquery-sem-member-var-face-%S" i)))))
      ))
 
 ;; ---------------------------------------------------------------------
