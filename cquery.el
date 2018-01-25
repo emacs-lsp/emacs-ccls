@@ -293,11 +293,11 @@ If nil, disable semantic highlighting."
                     (cl-loop
                      for (start end face) in ranges do
                      (forward-line (- (car start) last-line-number))
-                     (forward-char (cdr start))
+                     (move-to-column (cdr start))
                      ;; start of range
                      (setq range-start (point))
                      (forward-line (- (car end) (car start)))
-                     (forward-char (cdr end))
+                     (move-to-column (cdr end))
                      ;; end of range
                      (setq range-end (point))
                      (cquery--make-sem-highlight (cons range-start range-end) buffer face)
