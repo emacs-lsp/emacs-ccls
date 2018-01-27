@@ -386,6 +386,17 @@ If nil, disable semantic highlighting."
 ;;   Other cquery-specific methods
 ;; ---------------------------------------------------------------------
 
+(defun cquery-freshen-index (&optional whitelist blacklist)
+  "Rebuild indexes for matched files.
+`whitelist' and `blacklist' are ECMAScript regex used by std::regex_match
+`regexp-quote' quotes in elisp flavored regex, so some metacharacters may fail."
+  (interactive (list (list (concat "^" (regexp-quote buffer-file-name) "$")) (list ".")))
+  (lsp--cur-workspace-check)
+  (lsp--send-notification
+   (lsp--make-notification "$cquery/freshenIndex"
+                           (list :whitelist (or whitelist [])
+                                 :blacklist (or blacklist [])))))
+
 (defun cquery-xref-find-custom (method &optional display-action)
   "Find cquery-specific cross references.
 
