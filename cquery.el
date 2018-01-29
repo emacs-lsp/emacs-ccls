@@ -68,7 +68,7 @@
 (defalias 'cquery-additional-arguments 'cquery-extra-args)
 
 (defcustom cquery-cache-dir
-  ".vscode/cquery_cached_index/"
+  ".cquery_cached_index/"
   "Directory in which cquery will store its index cache.
 Relative to the project root directory."
   :type 'directory
@@ -293,17 +293,17 @@ If nil, disable semantic highlighting."
                     (cl-loop
                      for (start end face) in ranges do
                      (forward-line (- (car start) last-line-number))
-                     (beginning-of-line)
                      (forward-char (cdr start))
                      ;; start of range
                      (setq range-start (point))
-                     (forward-line (- (car end) (car start)))
-                     (beginning-of-line)
-                     (forward-char (cdr end))
-                     ;; end of range
-                     (setq range-end (point))
+                     (setq last-line-number (car start))
+                     (save-excursion
+                       (forward-line (- (car end) (car start)))
+                       (forward-char (cdr end))
+                       ;; end of range
+                       (setq range-end (point)))
                      (cquery--make-sem-highlight (cons range-start range-end) buffer face)
-                     (setq last-line-number (car end)))))))))))))
+                     )))))))))))
 
 (defmacro cquery-use-default-rainbow-sem-highlight ()
   "Use default rainbow semantic highlighting theme."
