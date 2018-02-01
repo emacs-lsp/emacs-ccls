@@ -257,16 +257,6 @@ If nil, disable semantic highlighting."
                   (funcall fn cquery-sem-member-var-faces)
                 (funcall fn cquery-sem-free-var-faces))))))))
 
-(defun cquery--read-semantic-ranges (symbol face)
-  (--map (let ((start (gethash "start" it))
-               (end (gethash "end" it)))
-           (list (cons (gethash "line" start)
-                       (gethash "character" start))
-                 (cons (gethash "line" end)
-                       (gethash "character" end))
-                 face))
-         (gethash "ranges" symbol)))
-
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "Publish semantic highlighting information according to PARAMS."
   (when cquery-sem-highlight-method
@@ -276,34 +266,13 @@ If nil, disable semantic highlighting."
       (when buffer
         (with-current-buffer buffer
           (save-excursion
-            (with-silent-modifications
-              (cquery--clear-sem-highlights)
-              (let ((last-line-number 0) ranges range-start range-end)
-                (dolist (symbol symbols)
-                  (-when-let (face (funcall cquery-sem-face-function symbol))
-                    (setq ranges
-                          (nconc (cquery--read-semantic-ranges symbol face)
-                                 ranges))))
-                ;; sort ranges by line number
-                (setq ranges
-                      (sort ranges (lambda (x y) (< (caar x) (caar y)))))
-                (ignore-errors
-                  (save-excursion
-                    (goto-char (point-min))
-                    (cl-loop
-                     for (start end face) in ranges do
-                     (forward-line (- (car start) last-line-number))
-                     (forward-char (cdr start))
-                     ;; start of range
-                     (setq range-start (point))
-                     (setq last-line-number (car start))
-                     (save-excursion
-                       (forward-line (- (car end) (car start)))
-                       (forward-char (cdr end))
-                       ;; end of range
-                       (setq range-end (point)))
-                     (cquery--make-sem-highlight (cons range-start range-end) buffer face)
-                     )))))))))))
+           (with-silent-modifications
+             (cquery--clear-sem-highlights)
+             (dolist (symbol symbols)
+               (-when-let (face (funcall cquery-sem-face-function symbol))
+                 (dolist (range
+                          (mapcar 'cquery--read-range (gethash "ranges" symbol)))
+                     (cquery--make-sem-highlight range buffer face)))))))))))
 
 (defmacro cquery-use-default-rainbow-sem-highlight ()
   "Use default rainbow semantic highlighting theme."
