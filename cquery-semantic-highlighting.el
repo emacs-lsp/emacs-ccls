@@ -168,9 +168,9 @@ If nil, disable semantic highlighting."
          (fn0 (lambda (faces lo0 hi0)
                 (let* ((n (length faces))
                        (lo (/ (* lo0 n) 1000))
-                       (hi (/ (* hi0 n) 1000)))
-                  (elt faces
-                       (if (= lo hi) (max (1- hi) 0) (+ lo (% stable-id (- hi lo))))))))
+                       (hi (/ (* hi0 n) 1000))
+                       (idx (max 0 (if (= lo hi) (1- hi) (+ lo (% stable-id (- hi lo)))))))
+                  (elt faces idx))))
          (fn (lambda (faces) (elt faces (% stable-id (length faces))))))
     ;; cquery/src/indexer.h ClangSymbolKind
     ;; clang/Index/IndexSymbol.h clang::index::SymbolKind
