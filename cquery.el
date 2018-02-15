@@ -75,6 +75,12 @@ Relative to the project root directory."
 ;;   Other cquery-specific methods
 ;; ---------------------------------------------------------------------
 
+(defun cquery-file-info ()
+  (lsp--cur-workspace-check)
+  (lsp--send-request
+   (lsp--make-request "$cquery/fileInfo"
+                      `(:textDocument ,(lsp--text-document-identifier)))))
+
 (defun cquery-freshen-index (&optional whitelist blacklist)
   "Rebuild indexes for matched files.
 `whitelist' and `blacklist' are ECMAScript regex used by std::regex_match
