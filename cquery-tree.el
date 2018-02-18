@@ -207,7 +207,7 @@
 (defun cquery-call-tree-toggle-expand ()
   "Toggle expansion of node at point"
   (interactive)
-  (when-let* ((node (cquery-call-tree--node-at-point)))
+  (-when-let* ((node (cquery-call-tree--node-at-point)))
     (setf (cquery-call-tree-node-expanded node)
           (or (not (cquery-call-tree-node-expanded node))
               (= 0 (cquery-call-tree--depth-at-point))))
@@ -222,14 +222,14 @@
       (if (> depth 0)
           (while (and (>= (cquery-call-tree--depth-at-point) depth)
                       (= 0 (forward-line -1))))
-        (when-let* ((parent (cquery-call-tree-node-parent (cquery-call-tree--node-at-point))))
+        (-when-let* ((parent (cquery-call-tree-node-parent (cquery-call-tree--node-at-point))))
           (setq cquery-call-tree--visible-root parent)
           (cquery-call-tree--refresh))))))
 
 (defun cquery-call-tree-set-root ()
   "Set root to current node"
   (interactive)
-  (when-let* ((node (cquery-call-tree--node-at-point)))
+  (-when-let* ((node (cquery-call-tree--node-at-point)))
     (when (cquery-call-tree-node-has-callers node)
       (setq cquery-call-tree--visible-root node)
       (setf (cquery-call-tree-node-expanded node) t)
@@ -238,7 +238,7 @@
 (defun cquery-call-tree-go ()
   "Go to the definition of the function at point"
   (interactive)
-  (when-let* ((node (cquery-call-tree--node-at-point)))
+  (-when-let* ((node (cquery-call-tree--node-at-point)))
     (select-window cquery-call-tree--origin-win)
     (find-file (car (cquery-call-tree-node-location node)))
     (goto-char (lsp--position-to-point (cdr (cquery-call-tree-node-location node))))
@@ -247,7 +247,7 @@
 (defun cquery-call-tree-look ()
   "Look at the definition of function at point"
   (interactive)
-  (when-let* ((node (cquery-call-tree--node-at-point)))
+  (-when-let* ((node (cquery-call-tree--node-at-point)))
     (with-selected-window cquery-call-tree--origin-win
       (find-file (car (cquery-call-tree-node-location node)))
       (goto-char (lsp--position-to-point (cdr (cquery-call-tree-node-location node))))
@@ -257,7 +257,7 @@
 (defun cquery-call-tree-expand-or-set-root ()
   "If the node at point is unexpanded expand it, otherwise set it as root"
   (interactive)
-  (when-let* ((node (cquery-call-tree--node-at-point)))
+  (-when-let* ((node (cquery-call-tree--node-at-point)))
     (when (cquery-call-tree-node-has-callers node)
       (if (cquery-call-tree-node-expanded node)
           (cquery-call-tree-set-root)
@@ -266,7 +266,7 @@
 (defun cquery-call-tree-collapse-or-select-parent ()
   "If the node at point is expanded collapse it, otherwise select its parent"
   (interactive)
-  (when-let* ((node (cquery-call-tree--node-at-point)))
+  (-when-let* ((node (cquery-call-tree--node-at-point)))
     (if (and (> (cquery-call-tree--depth-at-point) 0)
              (cquery-call-tree-node-expanded node))
         (cquery-call-tree-toggle-expand)

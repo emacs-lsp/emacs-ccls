@@ -161,10 +161,7 @@ If nil, disable semantic highlighting."
 
 (defun cquery-sem--default-face (symbol)
   "Get semantic highlighting face of SYMBOL."
-  (let* ((type (gethash "type" symbol))
-         (kind (gethash "kind" symbol))
-         (stable-id (gethash "stableId" symbol))
-         (is-type-member (gethash "isTypeMember" symbol))
+  (-let* (((&hash "type" type "kind" kind "storage" storage "stableId" stable-id) symbol)
          (fn0 (lambda (faces lo0 hi0)
                 (let* ((n (length faces))
                        (lo (/ (* lo0 n) 1000))
@@ -176,34 +173,24 @@ If nil, disable semantic highlighting."
     ;; clang/Index/IndexSymbol.h clang::index::SymbolKind
     (pcase kind
       ;; var
-      (4 (funcall fn0 cquery-sem-free-var-faces 600 700)) ; Macro
-      (13 (funcall fn0 cquery-sem-free-var-faces 0 600)) ; Variable
-      (25 (funcall fn0 cquery-sem-free-var-faces 700 1000)) ; Parameter
-      (14 (funcall fn0 cquery-sem-member-var-faces 400 1000)) ; Field
-      (15 (funcall fn0 cquery-sem-member-var-faces 200 400)) ; EnumConstant
-      (21 (funcall fn0 cquery-sem-member-var-faces 0 200)) ; StaticProperty
+      (13 (funcall fn0 cquery-sem-free-var-faces 0 800)) ; Variable
+      (255 (funcall fn0 cquery-sem-free-var-faces 800 1000)) ; Macro
+      (8 (funcall fn0 cquery-sem-member-var-faces 200 1000)) ; Field, StaticProperty
+      (22 (funcall fn0 cquery-sem-member-var-faces 0 200)) ; EnumMember
 
       ;; func
-      (12 (funcall fn0 cquery-sem-free-func-faces 0 800)) ; Function
-      (18 (funcall fn0 cquery-sem-free-func-faces 800 1000)) ; StaticMethod
-      (22 (funcall fn0 cquery-sem-member-func-faces 800 1000)) ; Constructor
-      (23 (funcall fn0 cquery-sem-member-func-faces 1000 1000)) ; Destructor
-      (24 (funcall fn0 cquery-sem-member-func-faces 1000 1000)) ; ConversionFunction
-      (16 (funcall fn0 cquery-sem-member-func-faces 0 800)) ; InstanceMethod
+      (6 (funcall fn0 cquery-sem-member-func-faces 0 800)) ; Method
+      (9 (funcall fn0 cquery-sem-member-func-faces 800 1000)) ; Constructor
+      (12 (funcall fn0 cquery-sem-free-func-faces 0 1000)) ; Function
 
       ;; type
-      ((or 6 7) (funcall fn0 cquery-sem-type-faces 0 700)) ; Struct | Class
-      (10 (funcall fn0 cquery-sem-type-faces 1000 1000)) ; Union
-      (11 (funcall fn0 cquery-sem-type-faces 700 1000)) ; TypeAlias
+      ((or 5 23) (funcall fn0 cquery-sem-type-faces 0 700)) ; Struct | Class | Union
+      (26 (funcall fn0 cquery-sem-type-faces 700 1000)) ; TypeAlias, TypeParameter
 
       (_ (pcase type
            (0 (funcall fn cquery-sem-type-faces))
-           (1 (if is-type-member
-                  (funcall fn cquery-sem-member-func-faces)
-                (funcall fn cquery-sem-free-func-faces)))
-           (2 (if is-type-member
-                  (funcall fn cquery-sem-member-var-faces)
-                (funcall fn cquery-sem-free-var-faces))))))))
+           (1 (funcall fn cquery-sem-free-func-faces))
+           (_ (funcall fn cquery-sem-free-var-faces)))))))
 
 (defun cquery--read-semantic-ranges (symbol face)
   (--map (let ((start (gethash "start" it))
