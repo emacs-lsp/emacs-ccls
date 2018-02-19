@@ -43,7 +43,17 @@
 
 (defface cquery-sem-static-face
   '((t :weight bold))
-  "The additional face for function/variable with static storage."
+  "The additional face for variables with static storage."
+  :group 'cquery)
+
+(defface cquery-sem-static-field-face
+  '((t :inherit cquery-sem-static-face))
+  "The additional face for static member variables."
+  :group 'cquery)
+
+(defface cquery-sem-static-method-face
+  '((t :inherit cquery-sem-static-face))
+  "The additional face for static member functions."
   :group 'cquery)
 
 (defcustom cquery-sem-function-faces [font-lock-function-name-face]
@@ -161,7 +171,9 @@ If nil, disable semantic highlighting."
 
 (defun cquery-sem--default-face (symbol)
   "Get semantic highlighting face of SYMBOL."
-  (-let* (((&hash "type" type "kind" kind "storage" storage "stableId" stable-id) symbol)
+  ;; https://github.com/cquery-project/cquery/blob/master/src/symbol.h
+  (-let* (((&hash "type" type "kind" kind "storage" storage
+                  "parentKind" parent-kind "stableId" stable-id) symbol)
          (fn0 (lambda (faces lo0 hi0)
                 (let* ((n (length faces))
                        (lo (/ (* lo0 n) 1000))
@@ -178,6 +190,8 @@ If nil, disable semantic highlighting."
       (9 `(,(funcall fn0 cquery-sem-function-faces 800 1000)
            cquery-sem-member-face)) ; Constructor
       (12 (funcall fn0 cquery-sem-function-faces 0 1000)) ; Function
+      (254 `(,(funcall fn0 cquery-sem-function-faces 0 1000)
+             cquery-sem-static-method-face)) ; StaticMethod
 
       ;; Types
       (3 (funcall fn0 cquery-sem-namespace-faces 0 1000)) ; Namespace
@@ -188,15 +202,16 @@ If nil, disable semantic highlighting."
 
       ;; Variables
       (13 `(,(funcall fn0 cquery-sem-variable-faces 0 1000)
-            ,@(when (= storage 3) '(cquery-sem-static-face))
-            )) ; Variable
+            ,@(when (or (= parent-kind 1) (= storage 3))
+                '(cquery-sem-static-face)))) ; Variable
       (255 (funcall fn0 cquery-sem-macro-faces 0 1000)) ; Macro
       (8 `(,(funcall fn0 cquery-sem-variable-faces 0 1000)
-           cquery-sem-member-face
-           ,@(when (= storage 3) '(cquery-sem-static-face)))) ; Field
+           ,(if (= storage 3)
+                'cquery-sem-static-field-face
+              'cquery-sem-member-face
+              ))) ; Field
       (22 `(,(funcall fn0 cquery-sem-variable-faces 0 1000)
-            cquery-sem-member-face
-            )) ; EnumMember
+            cquery-sem-member-face)) ; EnumMember
 
       (_ (pcase type
            (0 (funcall fn cquery-sem-type-faces))
@@ -234,21 +249,19 @@ If nil, disable semantic highlighting."
   "Use default rainbow semantic highlighting theme."
   (require 'dash)
   `(progn
-     ,@(--map-indexed `(defface ,(intern (format "cquery-sem-function-face-%S" it-index)) '((t :foreground ,it)) ".") cquery-sem-function-colors)
-     (setq cquery-sem-function-faces (apply #'vector (cl-loop for i below 10 collect (intern (format "cquery-sem-function-face-%S" i)))))
-
-     ,@(--map-indexed `(defface ,(intern (format "cquery-sem-macro-face-%S" it-index)) '((t :foreground ,it)) ".") cquery-sem-macro-colors)
-     (setq cquery-sem-macro-faces (apply #'vector (cl-loop for i below 10 collect (intern (format "cquery-sem-macro-face-%S" i)))))
-
-     ,@(--map-indexed `(defface ,(intern (format "cquery-sem-namespace-face-%S" it-index)) '((t :foreground ,it)) ".") cquery-sem-namespace-colors)
-     (setq cquery-sem-namespace-faces (apply #'vector (cl-loop for i below 10 collect (intern (format "cquery-sem-namespace-face-%S" i)))))
-
-     ,@(--map-indexed `(defface ,(intern (format "cquery-sem-type-face-%S" it-index)) '((t :foreground ,it)) ".") cquery-sem-type-colors)
-     (setq cquery-sem-type-faces (apply #'vector (cl-loop for i below 10 collect (intern (format "cquery-sem-type-face-%S" i)))))
-
-     ,@(--map-indexed `(defface ,(intern (format "cquery-sem-variable-face-%S" it-index)) '((t :foreground ,it)) ".") cquery-sem-variable-colors)
-     (setq cquery-sem-variable-faces (apply #'vector (cl-loop for i below 10 collect (intern (format "cquery-sem-variable-face-%S" i)))))
-     ))
+     ,@(cl-loop
+        for kind in '("function" "macro" "namespace" "type" "variable") append
+        (let ((colors (intern (format "cquery-sem-%s-colors" kind))))
+          (append
+           (--map-indexed
+            `(defface ,(intern (format "cquery-sem-%s-face-%S" kind it-index))
+               '((t :foreground ,it)) ".")
+            (symbol-value colors))
+           (list
+            `(setq ,(intern (format "cquery-sem-%s-faces" kind))
+                   (apply #'vector
+                          (cl-loop for i below (length ,colors) collect
+                                   (intern (format "cquery-sem-%s-face-%S" ,kind i)))))))))))
 
 ;; Add handler
 (push '("$cquery/publishSemanticHighlighting" . (lambda (w p) (cquery--publish-semantic-highlighting w p)))
