@@ -66,7 +66,7 @@
   :type '(repeat face)
   :group 'cquery)
 
-(defcustom cquery-sem-namespace-faces []
+(defcustom cquery-sem-namespace-faces [font-lock-constant-face]
   "Faces for namespaces."
   :type '(repeat face)
   :group 'cquery)
