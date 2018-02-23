@@ -71,6 +71,11 @@
   :type '(repeat face)
   :group 'cquery)
 
+(defcustom cquery-sem-parameter-faces [font-lock-variable-name-face]
+  "Faces for parameters."
+  :type '(repeat face)
+  :group 'cquery)
+
 (defcustom cquery-sem-type-faces [font-lock-type-face]
   "Faces used to mark types."
   :type '(repeat face)
@@ -103,6 +108,13 @@
   :type '(repeat color)
   :group 'cquery)
 
+(defcustom cquery-sem-parameter-colors
+  '("#429921" "#58c1a4" "#5ec648" "#36815b" "#83c65d"
+    "#417b2f" "#43cc71" "#7eb769" "#58bf89" "#3e9f4a")
+  "Default colors for `cquery-sem-parameter-faces'."
+  :type '(repeat color)
+  :group 'cquery)
+
 (defcustom cquery-sem-type-colors
   '("#e1afc3" "#d533bb" "#9b677f" "#e350b6" "#a04360"
     "#dd82bc" "#de3864" "#ad3f87" "#dd7a90" "#e0438a")
@@ -111,8 +123,7 @@
   :group 'cquery)
 
 (defcustom cquery-sem-variable-colors
-  '("#587d87" "#26cdca" "#397797" "#57c2cc" "#306b72"
-    "#6cbcdf" "#368896" "#3ea0d2" "#48a5af" "#7ca6b7")
+  cquery-sem-parameter-colors
   "Default colors for `cquery-sem-variable-faces'."
   :type '(repeat color)
   :group 'cquery)
@@ -197,13 +208,15 @@ If nil, disable semantic highlighting."
       (3 (funcall fn0 cquery-sem-namespace-faces 0 1000)) ; Namespace
       ((or 5 23) (funcall fn0 cquery-sem-type-faces 0 800)) ; Struct, Class
       (10 (funcall fn0 cquery-sem-type-faces 800 1000)) ; Enum
-      (26 `(,(funcall fn0 cquery-sem-type-faces 0 1000)
-            cquery-sem-member-face)) ; TypeParameter
+      (26 (funcall fn0 cquery-sem-type-faces 0 1000)) ; TypeParameter
+      (252 `(,(funcall fn0 cquery-sem-type-faces 0 1000)
+            cquery-sem-member-face)) ; TypeAlias
 
       ;; Variables
       (13 `(,(funcall fn0 cquery-sem-variable-faces 0 1000)
             ,@(when (or (= parent-kind 1) (= storage 3))
                 '(cquery-sem-static-face)))) ; Variable
+      (253 (funcall fn0 cquery-sem-parameter-faces 0 1000)) ; Parameter
       (255 (funcall fn0 cquery-sem-macro-faces 0 1000)) ; Macro
       (8 `(,(funcall fn0 cquery-sem-variable-faces 0 1000)
            ,(if (= storage 3)
@@ -250,7 +263,7 @@ If nil, disable semantic highlighting."
   (require 'dash)
   `(progn
      ,@(cl-loop
-        for kind in '("function" "macro" "namespace" "type" "variable") append
+        for kind in '("function" "macro" "namespace" "parameter" "type" "variable") append
         (let ((colors (intern (format "cquery-sem-%s-colors" kind))))
           (append
            (--map-indexed
