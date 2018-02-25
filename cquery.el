@@ -71,6 +71,19 @@ Relative to the project root directory."
   :type '(repeat string)
   :group 'cquery)
 
+(defcustom cquery-project-root-function
+  nil
+  "A function used to find the project root.
+
+The following methods are applied in order to get the project root.
+* `cquery-project-root-function'
+* `cquery-project-roots'
+* projectile
+* `.cquery' or `compile_commands.json'
+"
+  :type 'function
+  :group 'cquery)
+
 (defcustom cquery-project-roots
   nil
   "A list of project roots that will be matched against the source filename first

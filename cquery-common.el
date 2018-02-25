@@ -49,11 +49,14 @@
 
 (cl-defun cquery--get-root ()
   "Return the root directory of a cquery project."
+  (when cquery-project-root-function
+    (-when-let (root (funcall cquery-project-root-function))
+      (cl-return-from cquery--get-root root)))
   (cl-loop for root in cquery-project-roots do
            (when (string-prefix-p (expand-file-name root) buffer-file-name)
              (cl-return-from cquery--get-root root)))
   (or
-   (and (require 'projectile nil t) (projectile-project-root))
+   (and (require 'projectile nil t) (ignore-errors (projectile-project-root)))
    (expand-file-name (or (locate-dominating-file default-directory "compile_commands.json")
                          (locate-dominating-file default-directory ".cquery")
                          (user-error "Could not find cquery project root")))))
