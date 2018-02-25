@@ -268,7 +268,7 @@ If nil, disable semantic highlighting."
           (append
            (--map-indexed
             `(defface ,(intern (format "cquery-sem-%s-face-%S" kind it-index))
-               '((t :foreground ,it)) ".")
+               '((t :foreground ,it)) "." :group 'cquery)
             (symbol-value colors))
            (list
             `(setq ,(intern (format "cquery-sem-%s-faces" kind))

@@ -71,6 +71,18 @@ Relative to the project root directory."
   :type '(repeat string)
   :group 'cquery)
 
+(defcustom cquery-project-roots
+  nil
+  "A list of project roots that will be matched against the source filename first
+to get the project root, before consulting `projectile' or `project'.
+
+This is useful when your project has subprojects. Otherwise `projectile' and
+`project' may think the file resides in a subproject and thus the file
+does not belong to the current workspace.
+"
+  :type '(repeat directory)
+  :group 'cquery)
+
 ;; ---------------------------------------------------------------------
 ;;   Other cquery-specific methods
 ;; ---------------------------------------------------------------------

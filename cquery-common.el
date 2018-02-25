@@ -47,11 +47,16 @@
   (cons (lsp--position-to-point (gethash "start" range))
         (lsp--position-to-point (gethash "end" range))))
 
-(defun cquery--get-root ()
+(cl-defun cquery--get-root ()
   "Return the root directory of a cquery project."
-  (expand-file-name (or (locate-dominating-file default-directory "compile_commands.json")
-                        (locate-dominating-file default-directory ".cquery")
-                        (user-error "Could not find cquery project root"))))
+  (cl-loop for root in cquery-project-roots do
+           (when (string-prefix-p (expand-file-name root) buffer-file-name)
+             (cl-return-from cquery--get-root root)))
+  (or
+   (and (require 'projectile nil t) (projectile-project-root))
+   (expand-file-name (or (locate-dominating-file default-directory "compile_commands.json")
+                         (locate-dominating-file default-directory ".cquery")
+                         (user-error "Could not find cquery project root")))))
 
 (defun cquery--is-cquery-buffer(&optional buffer)
   "Return non-nil if current buffer is using the cquery client"
