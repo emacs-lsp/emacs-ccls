@@ -39,7 +39,7 @@
   :group 'cquery)
 
 (defface cquery-call-tree-node-base-face
-  '((t (:foreground "red")))
+  '((t (:foreground "orange red")))
   "."
   :group 'cquery)
 
@@ -138,15 +138,14 @@
 (defun cquery-call-tree--insert-node (node number nchildren depth)
   (let* ((prefix (cquery-call-tree--make-prefix node number nchildren depth))
          (name (cquery-call-tree--make-string node depth)))
-    (insert (propertize (concat prefix name "\n")
-                        'depth depth
-                        'face (if (= depth 0)
-                                  'cquery-call-tree-root-face
-                                (pcase (cquery-call-tree-node-call-type node)
-                                  ('0 'cquery-call-tree-node-normal-face)
-                                  ('1 'cquery-call-tree-node-base-face)
-                                  ('2 'cquery-call-tree-node-derived-face)))
-                        'cquery-call-tree-node node))
+    (insert (if (= depth 0)
+                (propertize (concat prefix name "\n")
+                            'depth depth
+                            'face 'cquery-call-tree-root-face
+                            'cquery-call-tree-node node)
+              (propertize (concat prefix name "\n")
+                          'depth depth
+                          'cquery-call-tree-node node)))
     (when (cquery-call-tree-node-expanded node)
       (when (and (cquery-call-tree-node-has-callers node)
                  (null (cquery-call-tree-node-children node)))
@@ -158,10 +157,18 @@
 
 (defun cquery-call-tree--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
-  (let ((map (make-sparse-keymap)))
-    (define-key map [mouse-1]
-      (propertize (cquery-call-tree-node-name node)
-                  'mouse-face 'cquery-call-tree-mouse-face))))
+  (if (= depth 0)
+      (cquery-call-tree-node-name node)
+    (concat
+     (propertize (cquery-call-tree-node-name node)
+                 'face (pcase (cquery-call-tree-node-call-type node)
+                         ('0 'cquery-call-tree-node-normal-face)
+                         ('1 'cquery-call-tree-node-base-face)
+                         ('2 'cquery-call-tree-node-derived-face)))
+     (propertize (format " (%s:%s)"
+                         (file-name-nondirectory (car (cquery-call-tree-node-location node)))
+                         (gethash "line" (cdr (cquery-call-tree-node-location node))))
+                 'face 'cquery-call-tree-mode-line-face))))
 
 (defun cquery-call-tree--make-prefix (node number nchildren depth)
   "."
@@ -310,5 +317,5 @@
   (cquery--cquery-buffer-check)
   (cquery-call-tree--open))
 
-(provide 'cquery-tree)
-;;; cquery-tree.el ends here
+(provide 'cquery-call-tree)
+;;; cquery-call-tree.el ends here
