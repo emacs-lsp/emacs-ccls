@@ -38,7 +38,10 @@
 (require 'cquery-common)
 (require 'cquery-semantic-highlighting)
 (require 'cquery-codelens)
+(require 'cquery-tree)
 (require 'cquery-call-tree)
+(require 'cquery-member-tree)
+(require 'cquery-inheritance-tree)
 
 ;; ---------------------------------------------------------------------
 ;;   Customization

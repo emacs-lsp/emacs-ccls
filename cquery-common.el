@@ -71,6 +71,19 @@
   (inline-quote (cl-assert (cquery--is-cquery-buffer) nil
                            "Cquery is not enabled in this buffer.")))
 
+(defun cquery--get-renderer ()
+  (thread-last lsp--cur-workspace
+    lsp--workspace-client
+    lsp--client-string-renderers
+    (assoc-string (thread-first lsp--cur-workspace
+                    lsp--workspace-client
+                    lsp--client-language-id
+                    (funcall (current-buffer))))
+    cdr))
+
+(defun cquery--render-string (str)
+  (funcall (cquery-inheritance-tree--get-renderer) str))
+
 ;; ---------------------------------------------------------------------
 ;;   Notification handlers
 ;; ---------------------------------------------------------------------
