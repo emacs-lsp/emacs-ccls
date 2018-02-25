@@ -90,7 +90,7 @@
    (make-cquery-tree-client
     :name "member hierarchy"
     :mode-line-format (propertize "Member hierarchy" 'face 'cquery-tree-mode-line-face)
-    :top-line-f (lambda () (propertize "Members of" 'face '(:height 0.8 :inherit cquery-tree-mode-line-face)))
+    :top-line-f (lambda () (propertize "Members of" 'face 'cquery-tree-mode-line-face))
     :make-string-f 'cquery-member-tree--make-string
     :read-node-f 'cquery-member-tree--read-node
     :request-children-f 'cquery-member-tree--request-children
