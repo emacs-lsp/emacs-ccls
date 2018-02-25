@@ -29,7 +29,7 @@
 ;; ---------------------------------------------------------------------
 
 (defface cquery-call-tree-root-face
-  nil
+  '((t (:height 1.5 :line-height 2.0)))
   "."
   :group 'cquery)
 
@@ -55,6 +55,11 @@
 
 (defface cquery-call-tree-icon-face
   '((t (:foreground "grey")))
+  "."
+  :group 'cquery)
+
+(defface cquery-call-tree-mode-line-face
+  '((t (:foreground "grey" :slant italic)))
   "."
   :group 'cquery)
 
@@ -126,48 +131,57 @@
     (setq buffer-read-only nil)
     (erase-buffer)
     (setf (cquery-call-tree-node-expanded cquery-call-tree--visible-root) t)
-    (cquery-call-tree--insert-node cquery-call-tree--visible-root 0)
+    (cquery-call-tree--insert-node cquery-call-tree--visible-root 0 1 0)
     (goto-char p)
     (setq buffer-read-only t)))
 
-(defun cquery-call-tree--insert-node (node depth)
-  (let* ((prefix (cquery-call-tree--make-prefix node depth))
+(defun cquery-call-tree--insert-node (node number nchildren depth)
+  (let* ((prefix (cquery-call-tree--make-prefix node number nchildren depth))
          (name (cquery-call-tree--make-string node depth)))
     (insert (propertize (concat prefix name "\n")
                         'depth depth
+                        'face (if (= depth 0)
+                                  'cquery-call-tree-root-face
+                                (pcase (cquery-call-tree-node-call-type node)
+                                  ('0 'cquery-call-tree-node-normal-face)
+                                  ('1 'cquery-call-tree-node-base-face)
+                                  ('2 'cquery-call-tree-node-derived-face)))
                         'cquery-call-tree-node node))
     (when (cquery-call-tree-node-expanded node)
       (when (and (cquery-call-tree-node-has-callers node)
                  (null (cquery-call-tree-node-children node)))
         (setf (cquery-call-tree-node-children node)
               (cquery-call-tree-node--request-children node)))
-      (--map (cquery-call-tree--insert-node it (+ depth 1))
-             (cquery-call-tree-node-children node)))))
+      (let ((children (cquery-call-tree-node-children node)))
+        (--map-indexed (cquery-call-tree--insert-node it it-index (length children) (+ depth 1))
+                       children)))))
 
 (defun cquery-call-tree--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
   (let ((map (make-sparse-keymap)))
     (define-key map [mouse-1]
       (propertize (cquery-call-tree-node-name node)
-                  'face (if (= depth 0)
-                            'cquery-call-tree-root-face
-                          (pcase (cquery-call-tree-node-call-type node)
-                            ('0 'cquery-call-tree-node-normal-face)
-                            ('1 'cquery-call-tree-node-base-face)
-                            ('2 'cquery-call-tree-node-derived-face)))
                   'mouse-face 'cquery-call-tree-mouse-face))))
 
-(defun cquery-call-tree--make-prefix (node depth)
+(defun cquery-call-tree--make-prefix (node number nchildren depth)
   "."
-  (let* ((padding (make-string (* 2 depth) ?\ ))
+  (let* ((padding (if (= depth 0) "" (make-string (* 2 (- depth 1)) ?\ )))
          (symbol (if (= depth 0)
                      (if (cquery-call-tree-node-parent node)
-                         "< "
-                       "  ")
+                         "⏴ "
+                       "")
                    (if (cquery-call-tree-node-has-callers node)
-                       (if (cquery-call-tree-node-expanded node) "v " "> ")
-                     "| "))))
+                       (if (cquery-call-tree-node-expanded node) "└⏷" "└⏵")
+                     (if (eq number (- nchildren 1)) "└╸" "├╸")))))
     (concat padding (propertize symbol 'face 'cquery-call-tree-icon-face))))
+
+(defun cquery-call-tree--get-mode-line ()
+  "Modeline format for call tree buffer"
+  (format " %s %s %s %s"
+          (propertize "Call types:" 'face 'cquery-call-tree-mode-line-face)
+          (propertize "Normal" 'face 'cquery-call-tree-node-normal-face)
+          (propertize "Base" 'face 'cquery-call-tree-node-base-face)
+          (propertize "Derived" 'face 'cquery-call-tree-node-derived-face)))
 
 (defun cquery-call-tree--open ()
   "."
@@ -185,14 +199,13 @@
         (user-error "Couldn't open a call tree from point"))
       (cquery-call-tree--refresh)
       (setq header-line-format nil)
-      (setq mode-line-format nil)
+      (setq mode-line-format (cquery-call-tree--get-mode-line))
       (goto-char 1)))
   (let ((win (display-buffer-in-side-window (get-buffer "*cquery-call-tree*") '((side . right)))))
     (set-window-margins win 1)
     (select-window win)
     (set-window-start win 1)
-    (set-window-dedicated-p win t)
-    ))
+    (set-window-dedicated-p win t)))
 
 (defun cquery-call-tree--node-at-point ()
   (get-text-property (point) 'cquery-call-tree-node))
@@ -277,7 +290,7 @@
 ;; ---------------------------------------------------------------------
 
 (defvar cquery-call-tree-mode-map nil
-  "Keymap uses with ‘lsp-ui-peek-mode’.")
+  "Keymap uses with ‘lsp-ui-call-tree-mode’.")
 
 (let ((map (make-sparse-keymap)))
   (define-key map (kbd "<tab>") 'cquery-call-tree-toggle-expand)
