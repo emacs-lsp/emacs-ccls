@@ -80,7 +80,7 @@
                                         `(:id ,id
                                               :callee ,callee
                                               :callType 3
-                                              :detailedName t)))))))
+                                              :detailedName :json-false)))))))
 
 (defun cquery-call-hierarchy--request-init (callee)
   "."
@@ -91,7 +91,7 @@
                                       :position ,(lsp--cur-position)
                                       :callee ,callee
                                       :callType 3
-                                      :detailedName t))))
+                                      :detailedName :json-false))))
 
 (defun cquery-call-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
@@ -107,7 +107,7 @@
        (propertize (format " (%s:%s)"
                            (file-name-nondirectory (car (cquery-tree-node-location node)))
                            (gethash "line" (cdr (cquery-tree-node-location node))))
-                   'face 'cquery-call-hierarchy-mode-line-face)))))
+                   'face 'cquery-mode-line-face)))))
 
 (defun cquery-call-hierarchy (callee)
   (interactive "P")
