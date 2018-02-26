@@ -43,7 +43,7 @@
 (defun cquery--make-code-lens-string (command)
   "."
   (let ((map (make-sparse-keymap)))
-    (define-key map [mouse-1] (lambda () (interactive) (cquery-execute-command command)))
+    (define-key map [mouse-1] (lambda () (interactive) (cquery--execute-command (gethash "command" command) (gethash "arguments" command))))
     (propertize (gethash "title" command)
                 'face 'cquery-code-lens-face
                 'mouse-face 'cquery-code-lens-mouse-face
@@ -69,7 +69,7 @@
                 (setq buffers (cons buffer buffers)))
               (let ((ov (make-overlay (car range) (cdr range) buffer)))
                 (overlay-put ov 'cquery-code-lens t)
-                (overlay-put ov 'after-string (format " %s " (cquery--make-code-lens-string root)))))))))))
+                (overlay-put ov 'after-string (format " %s" (cquery--make-code-lens-string root)))))))))))
 
 (defun cquery-request-code-lens ()
   "Request code lens from cquery."
@@ -87,14 +87,21 @@
     (when (overlay-get ov 'cquery-code-lens)
       (delete-overlay ov))))
 
+(defun cquery-code-lens--request-when-idle ()
+  (run-with-idle-timer 0.5 nil 'cquery-request-code-lens))
+
 (define-minor-mode cquery-code-lens-mode
   "toggle code-lens overlays"
   :group 'cquery
   :global nil
   :init-value nil
   :lighter "Lens"
-  (if cquery-code-lens-mode
-      (cquery-request-code-lens)
-    (cquery-clear-code-lens)))
+  (pcase cquery-code-lens-mode
+    ('t
+     (cquery-request-code-lens)
+     (add-hook 'lsp-after-diagnostics-hook 'cquery-code-lens--request-when-idle t t))
+    ('nil
+     (remove-hook 'lsp-after-diagnostics-hook 'cquery-code-lens--request-when-idle t)
+     (cquery-clear-code-lens))))
 
 (provide 'cquery-codelens)
