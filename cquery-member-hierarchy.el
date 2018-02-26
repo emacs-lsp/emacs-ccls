@@ -66,15 +66,14 @@
 (defun cquery-member-hierarchy--request-init ()
   "."
   (cquery--cquery-buffer-check)
-  (list
-   (lsp--send-request
-    (lsp--make-request "$cquery/memberHierarchyInitial"
-                       `(
-                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
-                         :position ,(lsp--cur-position)
-                         :levels 1
-                         :detailedName t
-                         )))))
+  (lsp--send-request
+   (lsp--make-request "$cquery/memberHierarchyInitial"
+                      `(
+                        :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
+                        :position ,(lsp--cur-position)
+                        :levels 1
+                        :detailedName t
+                        ))))
 
 (defun cquery-member-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"

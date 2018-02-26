@@ -85,14 +85,13 @@
 (defun cquery-call-hierarchy--request-init (callee)
   "."
   (cquery--cquery-buffer-check)
-  (list
-   (lsp--send-request
-    (lsp--make-request "$cquery/callHierarchyInitial"
-                       `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
-                                       :position ,(lsp--cur-position)
-                                       :callee ,callee
-                                       :callType 3
-                                       :detailedName t)))))
+  (lsp--send-request
+   (lsp--make-request "$cquery/callHierarchyInitial"
+                      `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
+                                      :position ,(lsp--cur-position)
+                                      :callee ,callee
+                                      :callType 3
+                                      :detailedName t))))
 
 (defun cquery-call-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
@@ -118,11 +117,11 @@
    (make-cquery-tree-client
     :name "call hierarchy"
     :mode-line-format (format " %s %s %s %s"
-                              (propertize "Caller types:" 'face 'cquery-tree-mode-line-face)
+                              (propertize (if (eq callee t) "Callee types:" "Caller types:") 'face 'cquery-tree-mode-line-face)
                               (propertize "Normal" 'face 'cquery-call-hierarchy-node-normal-face)
                               (propertize "Base" 'face 'cquery-call-hierarchy-node-base-face)
                               (propertize "Derived" 'face 'cquery-call-hierarchy-node-derived-face))
-    :top-line-f (lambda () (propertize "Callers of" 'face '(:height 1.0 :inherit cquery-tree-mode-line-face)))
+    :top-line-f (lambda () (propertize (if (eq callee t) "Callees of " "Callers of") 'face '(:height 1.0 :inherit cquery-tree-mode-line-face)))
     :make-string-f 'cquery-call-hierarchy--make-string
     :read-node-f 'cquery-call-hierarchy--read-node
     :request-children-f (apply-partially #'cquery-call-hierarchy--request-children callee)

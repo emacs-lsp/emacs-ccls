@@ -165,8 +165,8 @@
       (setq lsp--cur-workspace lsp-ws
             cquery-tree--cur-client client
             cquery-tree--origin-win (get-buffer-window orig-buf)
-            cquery-tree--root-nodes (-map 'cquery-tree--read-node root-node-data)
-            cquery-tree--visible-root (car cquery-tree--root-nodes))
+            cquery-tree--root-nodes (when root-node-data (cquery-tree--read-node root-node-data))
+            cquery-tree--visible-root cquery-tree--root-nodes)
       (when (null cquery-tree--root-nodes)
         (user-error "Couldn't open tree from point"))
       (cquery-tree--refresh)

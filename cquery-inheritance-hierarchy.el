@@ -33,6 +33,7 @@
 
 (cl-defstruct cquery-inheritance-hierarchy-node
   id
+  kind
   name)
 
 (defun cquery-inheritance-hierarchy--read-node (data &optional parent)
@@ -71,8 +72,7 @@
 (defun cquery-inheritance-hierarchy--request-init (derived)
   "."
   (cquery--cquery-buffer-check)
-  (list
-   (lsp--send-request
+  (lsp--send-request
     (lsp--make-request "$cquery/inheritanceHierarchyInitial"
                        `(
                          :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
@@ -81,7 +81,7 @@
                          :derived ,derived
                          :detailedName t
                          :levels 1
-                         )))))
+                         ))))
 
 (defun cquery-inheritance-hierarchy--make-string (node _depth)
   "Propertize the name of NODE with the correct properties"
