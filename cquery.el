@@ -39,9 +39,9 @@
 (require 'cquery-semantic-highlighting)
 (require 'cquery-codelens)
 (require 'cquery-tree)
-(require 'cquery-call-tree)
-(require 'cquery-member-hierarchy)
+(require 'cquery-call-hierarchy)
 (require 'cquery-inheritance-hierarchy)
+(require 'cquery-member-hierarchy)
 
 ;; ---------------------------------------------------------------------
 ;;   Customization

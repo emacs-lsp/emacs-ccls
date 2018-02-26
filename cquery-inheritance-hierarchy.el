@@ -33,7 +33,6 @@
 
 (cl-defstruct cquery-inheritance-hierarchy-node
   id
-  kind
   name)
 
 (defun cquery-inheritance-hierarchy--read-node (data &optional parent)
@@ -92,11 +91,10 @@
         (propertize "Bases" 'face 'cquery-inheritance-hierarchy-base-face)
       (cquery--render-string name))))
 
-(defun cquery-inheritance-hierarchy (&optional derived)
-  (interactive)
+(defun cquery-inheritance-hierarchy (derived)
+  (interactive "P")
   (cquery--cquery-buffer-check)
-  (when (null derived)
-    (setq derived :json-false))
+  (setq callee (if callee t :json-false))
   (cquery-tree--open
    (make-cquery-tree-client
     :name "inheritance hierarchy"
