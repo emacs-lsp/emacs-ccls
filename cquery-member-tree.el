@@ -47,7 +47,7 @@
            :children nil
            :data (make-cquery-member-tree-node
                   :name (gethash "name" data)
-                  :field-name (gethash "field_name" data)
+                  :field-name (gethash "fieldName" data)
                   :id (gethash "id" data)))))
     (setf (cquery-tree-node-children node)
           (--map (cquery-member-tree--read-node it node)
