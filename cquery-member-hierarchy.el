@@ -29,12 +29,12 @@
 ;;   Tree node
 ;; ---------------------------------------------------------------------
 
-(cl-defstruct cquery-member-tree-node
+(cl-defstruct cquery-member-hierarchy-node
   name
   field-name
   id)
 
-(defun cquery-member-tree--read-node (data &optional parent)
+(defun cquery-member-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
   (let* ((location (gethash "location" data))
          (filename (string-remove-prefix lsp--uri-file-prefix (gethash "uri" location)))
@@ -45,25 +45,25 @@
            :parent parent
            :expanded nil
            :children nil
-           :data (make-cquery-member-tree-node
+           :data (make-cquery-member-hierarchy-node
                   :name (gethash "name" data)
                   :field-name (gethash "fieldName" data)
                   :id (gethash "id" data)))))
     (setf (cquery-tree-node-children node)
-          (--map (cquery-member-tree--read-node it node)
+          (--map (cquery-member-hierarchy--read-node it node)
                  (gethash "children" data)))
     node))
 
-(defun cquery-member-tree--request-children (node)
+(defun cquery-member-hierarchy--request-children (node)
   "."
-  (let ((id (cquery-member-tree-node-id (cquery-tree-node-data node))))
-    (--map (cquery-member-tree--read-node it node)
+  (let ((id (cquery-member-hierarchy-node-id (cquery-tree-node-data node))))
+    (--map (cquery-member-hierarchy--read-node it node)
            (gethash "children" (lsp--send-request
                                 (lsp--make-request "$cquery/memberHierarchyExpand"
                                                    `(:id ,id
                                                          :levels 1 :detailedName t)))))))
 
-(defun cquery-member-tree--request-init ()
+(defun cquery-member-hierarchy--request-init ()
   "."
   (cquery--cquery-buffer-check)
   (list
@@ -76,14 +76,14 @@
                          :detailedName t
                          )))))
 
-(defun cquery-member-tree--make-string (node depth)
+(defun cquery-member-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
   (let ((data (cquery-tree-node-data node)))
     (cquery--render-string (if (eq depth 0)
-                               (cquery-member-tree-node-name data)
-                             (cquery-member-tree-node-field-name data)))))
+                               (cquery-member-hierarchy-node-name data)
+                             (cquery-member-hierarchy-node-field-name data)))))
 
-(defun cquery-member-tree ()
+(defun cquery-member-hierarchy ()
   (interactive)
   (cquery--cquery-buffer-check)
   (cquery-tree--open
@@ -91,10 +91,10 @@
     :name "member hierarchy"
     :mode-line-format (propertize "Member hierarchy" 'face 'cquery-tree-mode-line-face)
     :top-line-f (lambda () (propertize "Members of" 'face 'cquery-tree-mode-line-face))
-    :make-string-f 'cquery-member-tree--make-string
-    :read-node-f 'cquery-member-tree--read-node
-    :request-children-f 'cquery-member-tree--request-children
-    :request-init-f 'cquery-member-tree--request-init)))
+    :make-string-f 'cquery-member-hierarchy--make-string
+    :read-node-f 'cquery-member-hierarchy--read-node
+    :request-children-f 'cquery-member-hierarchy--request-children
+    :request-init-f 'cquery-member-hierarchy--request-init)))
 
-(provide 'cquery-member-tree)
-;;; cquery-member-tree.el ends here
+(provide 'cquery-member-hierarchy)
+;;; cquery-member-hierarchy.el ends here
