@@ -84,6 +84,10 @@
 (defun cquery--render-string (str)
   (funcall (cquery--get-renderer) str))
 
+(defun cquery--render-type (str)
+  "Render a string as a type"
+  (string-remove-suffix " a;" (cquery--render-string (format "%s a;" str))))
+
 ;; ---------------------------------------------------------------------
 ;;   Notification handlers
 ;; ---------------------------------------------------------------------

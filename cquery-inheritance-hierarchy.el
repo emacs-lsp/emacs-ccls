@@ -31,6 +31,11 @@
   "."
   :group 'cquery)
 
+(defcustom cquery-inheritance-hierarchy-use-detailed-name t
+  "Use detailed name for types in inheritance hierarchy"
+  :group 'cquery
+  :type 'boolean)
+
 (cl-defstruct cquery-inheritance-hierarchy-node
   id
   kind
@@ -67,21 +72,21 @@
                      (lsp--make-request "$cquery/inheritanceHierarchyExpand"
                                         `(:id ,id :kind ,kind
                                               :derived ,derived
-                                              :detailedName t :levels 1)))))))
+                                              :detailedName ,(if cquery-inheritance-hierarchy-use-detailed-name t :json-false)
+                                              :levels ,cquery-tree-initial-levels)))))))
 
 (defun cquery-inheritance-hierarchy--request-init (derived)
   "."
   (cquery--cquery-buffer-check)
   (lsp--send-request
-    (lsp--make-request "$cquery/inheritanceHierarchyInitial"
-                       `(
-                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
-                         :position ,(lsp--cur-position)
+   (lsp--make-request "$cquery/inheritanceHierarchyInitial"
+                      `(
+                        :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
+                        :position ,(lsp--cur-position)
 
-                         :derived ,derived
-                         :detailedName t
-                         :levels 1
-                         ))))
+                        :derived ,derived
+                        :detailedName ,(if cquery-inheritance-hierarchy-use-detailed-name t :json-false)
+                        :levels 1))))
 
 (defun cquery-inheritance-hierarchy--make-string (node _depth)
   "Propertize the name of NODE with the correct properties"
@@ -89,7 +94,7 @@
          (name (cquery-inheritance-hierarchy-node-name data)))
     (if (string-equal name "[[Base]]")
         (propertize "Bases" 'face 'cquery-inheritance-hierarchy-base-face)
-      (cquery--render-string name))))
+      (cquery--render-type name))))
 
 (defun cquery-inheritance-hierarchy (derived)
   (interactive "P")

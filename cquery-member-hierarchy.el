@@ -25,6 +25,11 @@
 (require 'cquery-common)
 (require 'cquery-tree)
 
+(defcustom cquery-member-hierarchy-use-detailed-name t
+  "Use detailed name for member hierarchy"
+  :group 'cquery
+  :type 'boolean)
+
 ;; ---------------------------------------------------------------------
 ;;   Tree node
 ;; ---------------------------------------------------------------------
@@ -64,7 +69,8 @@
            (gethash "children" (lsp--send-request
                                 (lsp--make-request "$cquery/memberHierarchyExpand"
                                                    `(:id ,id
-                                                         :levels 1 :detailedName t)))))))
+                                                         :levels ,cquery-tree-initial-levels
+                                                         :detailedName ,(if cquery-member-hierarchy-use-detailed-name t :json-false))))))))
 
 (defun cquery-member-hierarchy--request-init ()
   "."
@@ -75,8 +81,7 @@
                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                         :position ,(lsp--cur-position)
                         :levels 1
-                        :detailedName t
-                        ))))
+                        :detailedName ,(if cquery-member-hierarchy-use-detailed-name t :json-false)))))
 
 (defun cquery-member-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"

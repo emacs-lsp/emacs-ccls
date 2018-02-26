@@ -44,6 +44,10 @@
   "."
   :group 'cquery)
 
+(defcustom cquery-call-hierarchy-use-detailed-name nil
+  "Use detailed name for call hierarchy"
+  :group 'cquery
+  :type 'boolean)
 
 ;; ---------------------------------------------------------------------
 ;;   Tree node
@@ -80,7 +84,9 @@
                                         `(:id ,id
                                               :callee ,callee
                                               :callType 3
-                                              :detailedName :json-false)))))))
+                                              :levels ,cquery-tree-initial-levels
+                                              :detailedName ,(if cquery-call-hierarchy-use-detailed-name t :json-false)
+                                              )))))))
 
 (defun cquery-call-hierarchy--request-init (callee)
   "."
@@ -91,7 +97,8 @@
                                       :position ,(lsp--cur-position)
                                       :callee ,callee
                                       :callType 3
-                                      :detailedName :json-false))))
+                                      :detailedName ,(if cquery-call-hierarchy-use-detailed-name t :json-false)
+                                      ))))
 
 (defun cquery-call-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
