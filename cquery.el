@@ -40,8 +40,8 @@
 (require 'cquery-codelens)
 (require 'cquery-tree)
 (require 'cquery-call-tree)
-(require 'cquery-member-tree)
-(require 'cquery-inheritance-tree)
+(require 'cquery-member-hierarchy)
+(require 'cquery-inheritance-hierarchy)
 
 ;; ---------------------------------------------------------------------
 ;;   Customization
