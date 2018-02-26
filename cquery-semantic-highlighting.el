@@ -244,7 +244,7 @@ If nil, disable semantic highlighting."
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "Publish semantic highlighting information according to PARAMS."
   (when cquery-sem-highlight-method
-    (let* ((file (cquery--uri-to-file (gethash "uri" params)))
+    (let* ((file (lsp--uri-to-path (gethash "uri" params)))
            (buffer (find-buffer-visiting file))
            (symbols (gethash "symbols" params)))
       (when buffer
@@ -292,7 +292,7 @@ If nil, disable semantic highlighting."
 
 (defun cquery--set-inactive-regions (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
-  (let* ((file (cquery--uri-to-file (gethash "uri" params)))
+  (let* ((file (lsp--uri-to-path (gethash "uri" params)))
          (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
          (buffer (find-buffer-visiting file)))
     (when buffer

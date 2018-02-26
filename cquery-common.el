@@ -40,9 +40,6 @@
 ;;   Utility
 ;; ---------------------------------------------------------------------
 
-(defun cquery--uri-to-file (uri)
-  (string-remove-prefix lsp--uri-file-prefix uri))
-
 (defun cquery--read-range (range)
   (cons (lsp--position-to-point (gethash "start" range))
         (lsp--position-to-point (gethash "end" range))))
@@ -107,7 +104,7 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
   (let* ((uri (car arguments))
          (data (cdr arguments)))
     (save-current-buffer
-      (find-file (cquery--uri-to-file uri))
+      (find-file (lsp--uri-to-path uri))
       (pcase command
         ;; Code actions
         ('"cquery._applyFixIt"

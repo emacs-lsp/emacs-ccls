@@ -59,7 +59,7 @@
              (root (gethash "command" lens))
              ;; (title (gethash "title" root))
              ;; (command (gethash "command" root))
-             (buffer (find-buffer-visiting (cquery--uri-to-file (car (gethash "arguments" root))))))
+             (buffer (find-buffer-visiting (lsp--uri-to-path (car (gethash "arguments" root))))))
         (when buffer
           (with-current-buffer buffer
             (save-excursion
