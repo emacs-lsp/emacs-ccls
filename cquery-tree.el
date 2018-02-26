@@ -28,6 +28,10 @@
 ;;   Customization
 ;; ---------------------------------------------------------------------
 
+(defcustom cquery-tree-initial-levels 2
+  "."
+  :group 'cquery)
+
 (defface cquery-tree-root-face
   '((t (:height 1.5 :line-height 2.0)))
   "."
@@ -133,7 +137,7 @@
               (propertize (concat prefix name "\n")
                           'depth depth
                           'cquery-tree-node node)))
-    (when (cquery-tree-node-expanded node)
+    (when (or (cquery-tree-node-expanded node) (< depth cquery-tree-initial-levels))
       (when (and (cquery-tree-node-has-children node)
                  (null (cquery-tree-node-children node)))
         (setf (cquery-tree-node-children node)

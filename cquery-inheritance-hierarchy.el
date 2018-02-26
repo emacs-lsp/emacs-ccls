@@ -94,7 +94,7 @@
 (defun cquery-inheritance-hierarchy (derived)
   (interactive "P")
   (cquery--cquery-buffer-check)
-  (setq callee (if callee t :json-false))
+  (setq derived (if derived t :json-false))
   (cquery-tree--open
    (make-cquery-tree-client
     :name "inheritance hierarchy"
