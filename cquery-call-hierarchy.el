@@ -61,7 +61,7 @@
 (defun cquery-call-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
   (-let* ((location (gethash "location" data))
-          (filename (string-remove-prefix lsp--uri-file-prefix (gethash "uri" location)))
+          (filename (lsp--uri-to-path (gethash "uri" location)))
           ((&hash "id" id "name" name "callType" call-type) data))
     (make-cquery-tree-node
      :location (cons filename (gethash "start" (gethash "range" location)))

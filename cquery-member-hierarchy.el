@@ -42,7 +42,7 @@
 (defun cquery-member-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
   (-let* (((&hash "location" location "numChildren" nchildren "name" name "fieldName" field-name "id" id "children" children) data)
-          (filename (string-remove-prefix lsp--uri-file-prefix (gethash "uri" location)))
+          (filename (lsp--uri-to-path (gethash "uri" location)))
           (node
            (make-cquery-tree-node
             :location (cons filename (gethash "start" (gethash "range" location)))

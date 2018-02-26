@@ -44,7 +44,7 @@
 (defun cquery-inheritance-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
   (-let* ((location (gethash "location" data '(nil . nil)))
-          (filename (string-remove-prefix lsp--uri-file-prefix (gethash "uri" location)))
+          (filename (lsp--uri-to-path (gethash "uri" location)))
           ((&hash "id" id "kind" kind "name" name) data)
           (node
            (make-cquery-tree-node
