@@ -61,7 +61,7 @@
            (gethash "children" (lsp--send-request
                                 (lsp--make-request "$cquery/memberHierarchyExpand"
                                                    `(:id ,id
-                                                         :levels 1)))))))
+                                                         :levels 1 :detailedName t)))))))
 
 (defun cquery-member-tree--request-init ()
   "."
@@ -72,16 +72,16 @@
                        `(
                          :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                          :position ,(lsp--cur-position)
-                         :levels 1)))))
+                         :levels 1
+                         :detailedName t
+                         )))))
 
 (defun cquery-member-tree--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
   (let ((data (cquery-tree-node-data node)))
     (cquery--render-string (if (eq depth 0)
                                (cquery-member-tree-node-name data)
-                             (format "%s %s"
-                                     (cquery-member-tree-node-name data)
-                                     (cquery-member-tree-node-field-name data))))))
+                             (cquery-member-tree-node-field-name data)))))
 
 (defun cquery-member-tree ()
   (interactive)
