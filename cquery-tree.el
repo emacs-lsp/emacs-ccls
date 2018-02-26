@@ -137,7 +137,7 @@
               (propertize (concat prefix name "\n")
                           'depth depth
                           'cquery-tree-node node)))
-    (when (or (cquery-tree-node-expanded node) (< depth cquery-tree-initial-levels))
+    (when (or (cquery-tree-node-expanded node))
       (when (and (cquery-tree-node-has-children node)
                  (null (cquery-tree-node-children node)))
         (setf (cquery-tree-node-children node)
@@ -158,6 +158,13 @@
                      (if (eq number (- nchildren 1)) "└╸" "├╸")))))
     (concat padding (propertize symbol 'face 'cquery-tree-icon-face))))
 
+(defun cquery-tree--expand-levels (node levels)
+  "Expand NODE and its children LEVELS down"
+  (when (> levels 0)
+    (setf (cquery-tree-node-expanded node) t)
+    (--map (cquery-tree--expand-levels it (- levels 1))
+           (cquery-tree-node-children node))))
+
 (defun cquery-tree--open (client)
   "."
   (let ((lsp-ws lsp--cur-workspace)
@@ -173,6 +180,8 @@
             cquery-tree--visible-root cquery-tree--root-nodes)
       (when (null cquery-tree--root-nodes)
         (user-error "Couldn't open tree from point"))
+      (cquery-tree--refresh)
+      (cquery-tree--expand-levels cquery-tree--visible-root cquery-tree-initial-levels)
       (cquery-tree--refresh)
       (setq header-line-format (cquery-tree-client-header-line-format cquery-tree--cur-client))
       (setq mode-line-format (cquery-tree-client-mode-line-format cquery-tree--cur-client))

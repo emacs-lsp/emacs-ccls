@@ -121,7 +121,7 @@
                               (propertize "Normal" 'face 'cquery-call-hierarchy-node-normal-face)
                               (propertize "Base" 'face 'cquery-call-hierarchy-node-base-face)
                               (propertize "Derived" 'face 'cquery-call-hierarchy-node-derived-face))
-    :top-line-f (lambda () (propertize (if (eq callee t) "Callees of " "Callers of") 'face '(:height 1.0 :inherit cquery-tree-mode-line-face)))
+    :top-line-f (lambda () (propertize (if (eq callee t) "Callees of " "Callers of") 'face 'cquery-tree-mode-line-face))
     :make-string-f 'cquery-call-hierarchy--make-string
     :read-node-f 'cquery-call-hierarchy--read-node
     :request-children-f (apply-partially #'cquery-call-hierarchy--request-children callee)

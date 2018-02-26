@@ -94,15 +94,19 @@
 (defun cquery-inheritance-hierarchy (derived)
   (interactive "P")
   (cquery--cquery-buffer-check)
-  (setq derived (if derived t :json-false))
-  (cquery-tree--open
-   (make-cquery-tree-client
-    :name "inheritance hierarchy"
-    :mode-line-format (propertize "Inheritance hierarchy" 'face 'cquery-tree-mode-line-face)
-    :make-string-f 'cquery-inheritance-hierarchy--make-string
-    :read-node-f 'cquery-inheritance-hierarchy--read-node
-    :request-children-f (apply-partially #'cquery-inheritance-hierarchy--request-children derived)
-    :request-init-f (lambda () (cquery-inheritance-hierarchy--request-init derived)))))
+  (let ((json-derived (if derived t :json-false)))
+    (cquery-tree--open
+     (make-cquery-tree-client
+      :name "inheritance hierarchy"
+      :mode-line-format (propertize (if derived
+                                        "Inheritance Hierarchy: Subclasses"
+                                      "Inheritance Hierarchy: Bases")
+                                    'face 'cquery-tree-mode-line-face)
+      :top-line-f (lambda () (propertize (if derived "Derive from" "Bases of") 'face 'cquery-tree-mode-line-face))
+      :make-string-f 'cquery-inheritance-hierarchy--make-string
+      :read-node-f 'cquery-inheritance-hierarchy--read-node
+      :request-children-f (apply-partially #'cquery-inheritance-hierarchy--request-children json-derived)
+      :request-init-f (lambda () (cquery-inheritance-hierarchy--request-init json-derived))))))
 
 (provide 'cquery-inheritance-hierarchy)
 ;;; cquery-inheritance-hierarchy.el ends here
