@@ -82,7 +82,7 @@
     cdr))
 
 (defun cquery--render-string (str)
-  (funcall (cquery-inheritance-tree--get-renderer) str))
+  (funcall (cquery--get-renderer) str))
 
 ;; ---------------------------------------------------------------------
 ;;   Notification handlers
