@@ -80,7 +80,7 @@
     (--map (cquery-call-hierarchy--read-node it node)
            (gethash "children"
                     (lsp--send-request
-                     (lsp--make-request "$cquery/callHierarchyExpand"
+                     (lsp--make-request "$cquery/callHierarchy"
                                         `(:id ,id
                                               :callee ,callee
                                               :callType 3
@@ -92,7 +92,7 @@
   "."
   (cquery--cquery-buffer-check)
   (lsp--send-request
-   (lsp--make-request "$cquery/callHierarchyInitial"
+   (lsp--make-request "$cquery/callHierarchy"
                       `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                                       :position ,(lsp--cur-position)
                                       :callee ,callee

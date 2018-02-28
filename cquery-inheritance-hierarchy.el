@@ -69,7 +69,7 @@
     (--map (cquery-inheritance-hierarchy--read-node it node)
            (gethash "children"
                     (lsp--send-request
-                     (lsp--make-request "$cquery/inheritanceHierarchyExpand"
+                     (lsp--make-request "$cquery/inheritanceHierarchy"
                                         `(:id ,id :kind ,kind
                                               :derived ,derived
                                               :detailedName ,(if cquery-inheritance-hierarchy-use-detailed-name t :json-false)
@@ -79,7 +79,7 @@
   "."
   (cquery--cquery-buffer-check)
   (lsp--send-request
-   (lsp--make-request "$cquery/inheritanceHierarchyInitial"
+   (lsp--make-request "$cquery/inheritanceHierarchy"
                       `(
                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                         :position ,(lsp--cur-position)

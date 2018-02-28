@@ -67,7 +67,7 @@
   (let ((id (cquery-member-hierarchy-node-id (cquery-tree-node-data node))))
     (--map (cquery-member-hierarchy--read-node it node)
            (gethash "children" (lsp--send-request
-                                (lsp--make-request "$cquery/memberHierarchyExpand"
+                                (lsp--make-request "$cquery/memberHierarchy"
                                                    `(:id ,id
                                                          :levels ,cquery-tree-initial-levels
                                                          :detailedName ,(if cquery-member-hierarchy-use-detailed-name t :json-false))))))))
@@ -76,7 +76,7 @@
   "."
   (cquery--cquery-buffer-check)
   (lsp--send-request
-   (lsp--make-request "$cquery/memberHierarchyInitial"
+   (lsp--make-request "$cquery/memberHierarchy"
                       `(
                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                         :position ,(lsp--cur-position)
