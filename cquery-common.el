@@ -63,7 +63,7 @@
              (cl-return-from cquery--get-root root)))
   (user-error "Could not find cquery project root"))
 
-(defun cquery--is-cquery-buffer(&optional buffer)
+(defun cquery--is-cquery-buffer (&optional buffer)
   "Return non-nil if current buffer is using the cquery client"
   (with-current-buffer (or buffer (current-buffer))
     (and lsp--cur-workspace

@@ -80,7 +80,6 @@ Relative to the project root directory."
 "
   :type '(repeat function)
   :group 'cquery)
-(make-obsolete-variable 'cquery-project-roots 'cquery-project-root-matchers)
 
 (defcustom cquery-project-roots
   nil
