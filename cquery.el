@@ -37,7 +37,7 @@
 
 (require 'cquery-common)
 (require 'cquery-semantic-highlighting)
-(require 'cquery-codelens)
+(require 'cquery-code-lens)
 (require 'cquery-tree)
 (require 'cquery-call-hierarchy)
 (require 'cquery-inheritance-hierarchy)

@@ -28,10 +28,15 @@
 ;;   Customization
 ;; ---------------------------------------------------------------------
 
+(defgroup cquery-sem nil
+  "cquery semantic highlighting."
+  :group 'tools
+  :group 'cquery)
+
 (defface cquery-inactive-region-face
   '((t :inherit shadow))
   "The face used to mark inactive regions."
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defvar cquery-sem-face-function 'cquery-sem--default-face
   "Function used to determine the face of a symbol in semantic highlighting.")
@@ -39,52 +44,52 @@
 (defface cquery-sem-member-face
   '((t :slant italic))
   "The extra face applied to member functions/variables."
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defface cquery-sem-static-face
   '((t :weight bold))
   "The additional face for variables with static storage."
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defface cquery-sem-static-field-face
   '((t :inherit cquery-sem-static-face))
   "The additional face for static member variables."
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defface cquery-sem-static-method-face
   '((t :inherit cquery-sem-static-face))
   "The additional face for static member functions."
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-function-faces [font-lock-function-name-face]
   "Faces for functions."
   :type '(repeat face)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-macro-faces [font-lock-variable-name-face]
   "Faces for macros."
   :type '(repeat face)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-namespace-faces [font-lock-constant-face]
   "Faces for namespaces."
   :type '(repeat face)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-parameter-faces [font-lock-variable-name-face]
   "Faces for parameters."
   :type '(repeat face)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-type-faces [font-lock-type-face]
   "Faces used to mark types."
   :type '(repeat face)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-variable-faces [font-lock-variable-name-face]
   "Faces for variables."
   :type '(repeat face)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 ;; Default colors used by `cquery-use-default-rainbow-sem-highlight'
 (defcustom cquery-sem-function-colors
@@ -92,57 +97,47 @@
     "#88651e" "#e4b953" "#a36526" "#b28927" "#d69855")
   "Default colors for `cquery-sem-function-faces'."
   :type '(repeat color)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-macro-colors
   '("#e79528" "#c5373d" "#e8a272" "#d84f2b" "#a67245"
     "#e27a33" "#9b4a31" "#b66a1e" "#e27a71" "#cf6d49")
   "Default colors for `cquery-sem-macro-faces'."
   :type '(repeat color)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-namespace-colors
   '("#429921" "#58c1a4" "#5ec648" "#36815b" "#83c65d"
     "#417b2f" "#43cc71" "#7eb769" "#58bf89" "#3e9f4a")
   "Default colors for `cquery-sem-namespace-faces'."
   :type '(repeat color)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-parameter-colors
   '("#429921" "#58c1a4" "#5ec648" "#36815b" "#83c65d"
     "#417b2f" "#43cc71" "#7eb769" "#58bf89" "#3e9f4a")
   "Default colors for `cquery-sem-parameter-faces'."
   :type '(repeat color)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-type-colors
   '("#e1afc3" "#d533bb" "#9b677f" "#e350b6" "#a04360"
     "#dd82bc" "#de3864" "#ad3f87" "#dd7a90" "#e0438a")
   "Default colors for `cquery-sem-type-faces'."
   :type '(repeat color)
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-sem-variable-colors
   cquery-sem-parameter-colors
   "Default colors for `cquery-sem-variable-faces'."
   :type '(repeat color)
-  :group 'cquery)
-
-(defface cquery-code-lens-face
-  '((t :inherit shadow))
-  "The face used for code lens overlays."
-  :group 'cquery)
-
-(defface cquery-code-lens-mouse-face
-  '((t :box t))
-  "The face used for code lens overlays."
-  :group 'cquery)
+  :group 'cquery-sem)
 
 (defcustom cquery-enable-inactive-region
   t
   "Enable inactive region.
 Regions that are disabled by preprocessors will be displayed in shadow."
-  :group 'cquery
+  :group 'cquery-sem
   :type 'bool)
 
 (defcustom cquery-sem-highlight-method
@@ -150,7 +145,7 @@ Regions that are disabled by preprocessors will be displayed in shadow."
   "The method used to draw semantic highlighting.
 overlays are more accurate than font-lock, but slower.
 If nil, disable semantic highlighting."
-  :group 'cquery
+  :group 'cquery-sem
   :type '(radio
           (const nil)
           (const :tag "overlay" overlay)
@@ -268,7 +263,7 @@ If nil, disable semantic highlighting."
           (append
            (--map-indexed
             `(defface ,(intern (format "cquery-sem-%s-face-%S" kind it-index))
-               '((t :foreground ,it)) "." :group 'cquery)
+               '((t :foreground ,it)) "." :group 'cquery-sem)
             (symbol-value colors))
            (list
             `(setq ,(intern (format "cquery-sem-%s-faces" kind))

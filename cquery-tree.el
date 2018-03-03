@@ -28,34 +28,39 @@
 ;;   Customization
 ;; ---------------------------------------------------------------------
 
+(defgroup cquery-tree nil
+  "cquery tree."
+  :group 'tools
+  :group 'cquery)
+
 (defcustom cquery-tree-initial-levels 2
   "."
-  :group 'cquery)
+  :group 'cquery-tree)
 
 (defface cquery-tree-root-face
   '((t (:height 1.5 :line-height 2.0)))
   "."
-  :group 'cquery)
+  :group 'cquery-tree)
 
 (defface cquery-tree-mouse-face
   '((t (:background "green")))
   "."
-  :group 'cquery)
+  :group 'cquery-tree)
 
 (defface cquery-tree-icon-face
   '((t (:foreground "grey")))
   "."
-  :group 'cquery)
+  :group 'cquery-tree)
 
 (defface cquery-tree-header-line-face
   '((t (:foreground "grey" :height 0.8)))
   "."
-  :group 'cquery)
+  :group 'cquery-tree)
 
 (defface cquery-tree-mode-line-face
   '((t (:foreground "grey" :slant italic)))
   "."
-  :group 'cquery)
+  :group 'cquery-tree)
 
 ;; ---------------------------------------------------------------------
 ;;   Tree node

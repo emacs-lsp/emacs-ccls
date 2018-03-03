@@ -24,6 +24,21 @@
 
 (require 'cquery-common)
 
+(defgroup cquery-code-lens nil
+  "cquery code lens."
+  :group 'tools
+  :group 'cquery)
+
+(defface cquery-code-lens-face
+  '((t :inherit shadow))
+  "The face used for code lens overlays."
+  :group 'cquery-code-lens)
+
+(defface cquery-code-lens-mouse-face
+  '((t :box t))
+  "The face used for code lens overlays."
+  :group 'cquery-code-lens)
+
 ;; ---------------------------------------------------------------------
 ;;   Codelens
 ;;
@@ -104,4 +119,4 @@
      (remove-hook 'lsp-after-diagnostics-hook 'cquery-code-lens--request-when-idle t)
      (cquery-clear-code-lens))))
 
-(provide 'cquery-codelens)
+(provide 'cquery-code-lens)
