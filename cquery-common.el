@@ -44,19 +44,24 @@
   (cons (lsp--position-to-point (gethash "start" range))
         (lsp--position-to-point (gethash "end" range))))
 
+(defsubst cquery--root-from-file (file)
+  (-when-let (match (locate-dominating-file default-directory file))
+    (expand-file-name match)))
+
+(defsubst cquery--root-from-func (func)
+  (and (fboundp func) (ignore-errors (funcall func))))
+
 (cl-defun cquery--get-root ()
   "Return the root directory of a cquery project."
-  (when cquery-project-root-function
-    (-when-let (root (funcall cquery-project-root-function))
-      (cl-return-from cquery--get-root root)))
   (cl-loop for root in cquery-project-roots do
            (when (string-prefix-p (expand-file-name root) buffer-file-name)
              (cl-return-from cquery--get-root root)))
-  (or
-   (and (require 'projectile nil t) (ignore-errors (projectile-project-root)))
-   (expand-file-name (or (locate-dominating-file default-directory "compile_commands.json")
-                         (locate-dominating-file default-directory ".cquery")
-                         (user-error "Could not find cquery project root")))))
+  (cl-loop for matcher in cquery-project-root-matchers do
+           (-when-let (root (cl-typecase matcher
+                              (string (cquery--root-from-file matcher))
+                              (function  (cquery--root-from-func matcher))))
+             (cl-return-from cquery--get-root root)))
+  (user-error "Could not find cquery project root"))
 
 (defun cquery--is-cquery-buffer(&optional buffer)
   "Return non-nil if current buffer is using the cquery client"
