@@ -261,8 +261,9 @@
   "Jump to the location."
   (interactive)
   (-when-let* ((workspace lsp--cur-workspace)
-               (node (cquery-tree--node-at-point)))
-    (with-selected-window cquery-tree--origin-win
+               (node (cquery-tree--node-at-point))
+               (win (get-buffer-window cquery-tree--origin-buffer)))
+    (with-selected-window win
       (when split-fn
         (funcall split-fn))
       (find-file (car (cquery-tree-node-location node)))
@@ -280,19 +281,22 @@
   "Switch window and jump to the location."
   (interactive)
   (cquery-tree-press)
-  (select-window cquery-tree--origin-win))
+  (when-let* ((win (get-buffer-window cquery-tree--origin-buffer)))
+    (select-window win)))
 
 (defun cquery-tree-press-and-horizontal-split ()
   "Split window horizontally and jump to the location."
   (interactive)
   (cquery-tree-press #'split-window-horizontally)
-  (select-window cquery-tree--origin-win))
+  (when-let* ((win (get-buffer-window cquery-tree--origin-buffer)))
+    (select-window win)))
 
 (defun cquery-tree-press-and-vertical-split ()
   "Split window vertically and jump to the location."
   (interactive)
   (cquery-tree-press #'split-window-vertically)
-  (select-window cquery-tree--origin-win))
+  (when-let* ((win (get-buffer-window cquery-tree--origin-buffer)))
+    (select-window win)))
 
 (defun cquery-tree-next-line (&optional arg)
   (interactive "p")
@@ -343,11 +347,18 @@
 (defun cquery-tree-quit ()
   (interactive)
   (when-let* ((buf cquery-tree--origin-buffer)
-              (opoint cquery-tree--opoint))
+              (opoint cquery-tree--opoint)
+              (_ (window-live-p cquery-tree--origin-win)))
     (with-selected-window cquery-tree--origin-win
       (switch-to-buffer buf)
       (goto-char opoint)))
   (quit-window))
+
+(defun cquery-tree-yank-path ()
+  (interactive)
+  (--if-let (-some-> (cquery-tree--node-at-point) (cquery-tree-node-location) (car) (kill-new))
+      (message (format "Yanked path: %s" (propertize it 'face 'font-lock-string-face)))
+    (user-error "There is nothing to copy here")))
 
 ;; ---------------------------------------------------------------------
 ;;   Mode
@@ -355,24 +366,25 @@
 
 (defvar cquery-tree-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "<tab>") 'cquery-tree-toggle-expand)
-    (define-key map [mouse-1] 'cquery-tree-toggle-expand)
-    (define-key map (kbd "c") 'cquery-tree-toggle-calling)
-    (define-key map (kbd "f") 'cquery-tree-press)
-    (define-key map (kbd "h") 'cquery-tree-collapse-or-select-parent)
-    (define-key map (kbd "j") 'cquery-tree-next-line)
-    (define-key map (kbd "k") 'cquery-tree-prev-line)
-    (define-key map (kbd "J") 'cquery-tree-next-sibling)
-    (define-key map (kbd "K") 'cquery-tree-prev-sibling)
-    (define-key map (kbd "l") 'cquery-tree-expand-or-set-root)
-    (define-key map (kbd "oh") 'cquery-tree-press-and-horizontal-split)
-    (define-key map (kbd "ov") 'cquery-tree-press-and-vertical-split)
-    (define-key map (kbd "oo") 'cquery-tree-press-and-switch)
-    (define-key map (kbd "q") 'cquery-tree-quit)
-    (define-key map (kbd "Q") 'quit-window)
-    (define-key map (kbd "RET") 'cquery-tree-press-and-switch)
-    (define-key map (kbd "<left>") 'cquery-tree-collapse-or-select-parent)
-    (define-key map (kbd "<right>") 'cquery-tree-expand-or-set-root)
+    (define-key map (kbd "<tab>") #'cquery-tree-toggle-expand)
+    (define-key map [mouse-1] #'cquery-tree-toggle-expand)
+    (define-key map (kbd "c") #'cquery-tree-toggle-calling)
+    (define-key map (kbd "f") #'cquery-tree-press)
+    (define-key map (kbd "h") #'cquery-tree-collapse-or-select-parent)
+    (define-key map (kbd "j") #'cquery-tree-next-line)
+    (define-key map (kbd "k") #'cquery-tree-prev-line)
+    (define-key map (kbd "J") #'cquery-tree-next-sibling)
+    (define-key map (kbd "K") #'cquery-tree-prev-sibling)
+    (define-key map (kbd "l") #'cquery-tree-expand-or-set-root)
+    (define-key map (kbd "oh") #'cquery-tree-press-and-horizontal-split)
+    (define-key map (kbd "ov") #'cquery-tree-press-and-vertical-split)
+    (define-key map (kbd "oo") #'cquery-tree-press-and-switch)
+    (define-key map (kbd "q") #'cquery-tree-quit)
+    (define-key map (kbd "Q") #'quit-window)
+    (define-key map (kbd "yy") #'cquery-tree-yank-path)
+    (define-key map (kbd "RET") #'cquery-tree-press-and-switch)
+    (define-key map (kbd "<left>") #'cquery-tree-collapse-or-select-parent)
+    (define-key map (kbd "<right>") #'cquery-tree-expand-or-set-root)
     map)
   "Keymap for `cquery-tree-mode'.")
 
