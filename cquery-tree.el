@@ -91,7 +91,7 @@
 (defvar-local cquery-tree--cur-client nil
   "Buffer tree client.")
 
-(defvar-local cquery-tree--calling t
+(defvar-local cquery-tree-calling t
   "When non-nil, visit the node when the selected line changes.")
 
 (defun cquery-tree--read-node (data &optional parent)
@@ -254,15 +254,17 @@
 (defun cquery-tree-toggle-calling ()
   "Toggle `cquery-tree-calling'."
   (interactive)
-  (when (setq cquery-tree--calling (not cquery-tree--calling))
+  (when (setq cquery-tree-calling (not cquery-tree-calling))
     (cquery-tree-press)))
 
-(defun cquery-tree-press ()
+(defun cquery-tree-press (&optional split-fn)
   "Jump to the location."
   (interactive)
   (-when-let* ((workspace lsp--cur-workspace)
                (node (cquery-tree--node-at-point)))
     (with-selected-window cquery-tree--origin-win
+      (when split-fn
+        (funcall split-fn))
       (find-file (car (cquery-tree-node-location node)))
       ;; TODO Extract lsp-ui-peek.el lsp-ui-peek--goto-xref
       (unless lsp--cur-workspace
@@ -280,17 +282,45 @@
   (cquery-tree-press)
   (select-window cquery-tree--origin-win))
 
+(defun cquery-tree-press-and-horizontal-split ()
+  "Split window horizontally and jump to the location."
+  (interactive)
+  (cquery-tree-press #'split-window-horizontally)
+  (select-window cquery-tree--origin-win))
+
+(defun cquery-tree-press-and-vertical-split ()
+  "Split window vertically and jump to the location."
+  (interactive)
+  (cquery-tree-press #'split-window-vertically)
+  (select-window cquery-tree--origin-win))
+
 (defun cquery-tree-next-line (&optional arg)
   (interactive "p")
   (forward-line arg)
-  (when cquery-tree--calling
+  (when cquery-tree-calling
     (cquery-tree-press)))
 
 (defun cquery-tree-prev-line (&optional arg)
   (interactive "p")
   (forward-line (- arg))
-  (when cquery-tree--calling
+  (when cquery-tree-calling
     (cquery-tree-press)))
+
+(defun cquery-tree-next-sibling (&optional arg)
+  (interactive "p")
+  (when-let* ((depth (cquery-tree--depth-at-point)))
+    (while (and (forward-line 1)
+                (< depth (or (cquery-tree--depth-at-point) 0))))
+    (when cquery-tree-calling
+      (cquery-tree-press))))
+
+(defun cquery-tree-prev-sibling (&optional arg)
+  (interactive "p")
+  (when-let* ((depth (cquery-tree--depth-at-point)))
+    (while (and (forward-line -1)
+                (< depth (or (cquery-tree--depth-at-point) 0))))
+    (when cquery-tree-calling
+      (cquery-tree-press))))
 
 (defun cquery-tree-expand-or-set-root ()
   "If the node at point is unexpanded expand it, otherwise set it as root"
@@ -332,7 +362,12 @@
     (define-key map (kbd "h") 'cquery-tree-collapse-or-select-parent)
     (define-key map (kbd "j") 'cquery-tree-next-line)
     (define-key map (kbd "k") 'cquery-tree-prev-line)
+    (define-key map (kbd "J") 'cquery-tree-next-sibling)
+    (define-key map (kbd "K") 'cquery-tree-prev-sibling)
     (define-key map (kbd "l") 'cquery-tree-expand-or-set-root)
+    (define-key map (kbd "oh") 'cquery-tree-press-and-horizontal-split)
+    (define-key map (kbd "ov") 'cquery-tree-press-and-vertical-split)
+    (define-key map (kbd "oo") 'cquery-tree-press-and-switch)
     (define-key map (kbd "q") 'cquery-tree-quit)
     (define-key map (kbd "Q") 'quit-window)
     (define-key map (kbd "RET") 'cquery-tree-press-and-switch)
