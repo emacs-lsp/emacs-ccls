@@ -262,8 +262,8 @@
   (interactive)
   (-when-let* ((workspace lsp--cur-workspace)
                (node (cquery-tree--node-at-point))
-               (win (get-buffer-window cquery-tree--origin-buffer)))
-    (with-selected-window win
+               (_ (window-live-p cquery-tree--origin-win)))
+    (with-selected-window cquery-tree--origin-win
       (when split-fn
         (funcall split-fn))
       (find-file (car (cquery-tree-node-location node)))
@@ -281,22 +281,22 @@
   "Switch window and jump to the location."
   (interactive)
   (cquery-tree-press)
-  (when-let* ((win (get-buffer-window cquery-tree--origin-buffer)))
-    (select-window win)))
+  (when (window-live-p cquery-tree--origin-win)
+    (select-window cquery-tree--origin-win)))
 
 (defun cquery-tree-press-and-horizontal-split ()
   "Split window horizontally and jump to the location."
   (interactive)
   (cquery-tree-press #'split-window-horizontally)
-  (when-let* ((win (get-buffer-window cquery-tree--origin-buffer)))
-    (select-window win)))
+  (when (window-live-p cquery-tree--origin-win)
+    (select-window cquery-tree--origin-win)))
 
 (defun cquery-tree-press-and-vertical-split ()
   "Split window vertically and jump to the location."
   (interactive)
   (cquery-tree-press #'split-window-vertically)
-  (when-let* ((win (get-buffer-window cquery-tree--origin-buffer)))
-    (select-window win)))
+  (when (window-live-p cquery-tree--origin-win)
+    (select-window cquery-tree--origin-win)))
 
 (defun cquery-tree-next-line (&optional arg)
   (interactive "p")
