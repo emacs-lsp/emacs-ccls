@@ -167,17 +167,6 @@ If nil, disable semantic highlighting."
     ('font-lock
      (font-lock-ensure))))
 
-(defun cquery--make-sem-highlight (region buffer face)
-  "Highlight a REGION in BUFFER with FACE."
-  (pcase cquery-sem-highlight-method
-    ('overlay
-     (let ((ov (make-overlay (car region) (cdr region) buffer)))
-       (overlay-put ov 'face face)
-       (overlay-put ov 'cquery-sem-highlight t)
-       (push ov cquery--sem-overlays)))
-    ('font-lock
-     (put-text-property (car region) (cdr region) 'font-lock-face face buffer))))
-
 (defun cquery-sem--default-face (symbol)
   "Get semantic highlighting face of SYMBOL."
   ;; https://github.com/cquery-project/cquery/blob/master/src/symbol.h
@@ -242,19 +231,50 @@ If nil, disable semantic highlighting."
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "Publish semantic highlighting information according to PARAMS."
   (when cquery-sem-highlight-method
-    (let* ((file (lsp--uri-to-path (gethash "uri" params)))
-           (buffer (find-buffer-visiting file))
-           (symbols (gethash "symbols" params)))
-      (when buffer
-        (with-current-buffer buffer
-          (save-excursion
-            (with-silent-modifications
-              (cquery--clear-sem-highlights)
+    (when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
+                (buffer (find-buffer-visiting file))
+                (symbols (gethash "symbols" params)))
+      (with-current-buffer buffer
+        (save-excursion
+          (with-silent-modifications
+            (cquery--clear-sem-highlights)
+            (let (ranges point0 point1 (line 0) overlays)
               (dolist (symbol symbols)
-                (-when-let (face (funcall cquery-sem-face-function symbol))
-                  (dolist (range
-                           (mapcar 'cquery--read-range (gethash "ranges" symbol)))
-                    (cquery--make-sem-highlight range buffer face)))))))))))
+                (when-let* ((face (funcall cquery-sem-face-function symbol)))
+                  (dolist (range (gethash "ranges" symbol))
+                    (-let (((&hash "start" start "end" end) range))
+                      (push (list (gethash "line" start) (gethash "character" start)
+                                  (gethash "line" end) (gethash "character" end) face) ranges)))))
+              ;; Sort by start-line ASC, start-character ASC.
+              ;; The server guarantees the ranges are non-overlapping.
+              (setq ranges
+                    (sort ranges (lambda (x y)
+                                   (let ((x0 (car x)) (y0 (car y)))
+                                     (if (/= x0 y0)
+                                         (< x0 y0)
+                                       (< (cadr x) (cadr y)))))))
+              (widen)
+              (goto-char 1)
+              (dolist (range ranges)
+                (-let (((l0 c0 l1 c1 face) range))
+                  (forward-line (- l0 line))
+                  (forward-char c0)
+                  (setq point0 (point))
+                  (forward-line (- l1 l0))
+                  (forward-char c1)
+                  (setq point1 (point))
+                  (setq line l1)
+                  (push (list point0 point1 face) overlays)))
+              (pcase cquery-sem-highlight-method
+                ('font-lock
+                 (dolist (x overlays)
+                   (add-text-properties (car x) (cadr x) `(face ,(caddr x) fontified t))))
+                ('overlay
+                 (dolist (x overlays)
+                   (let ((ov (make-overlay (car x) (cadr x))))
+                     (overlay-put ov 'face (caddr x))
+                     (overlay-put ov 'cquery-sem-highlight t)
+                     (push ov cquery--sem-overlays))))))))))))
 
 (defmacro cquery-use-default-rainbow-sem-highlight ()
   "Use default rainbow semantic highlighting theme."
