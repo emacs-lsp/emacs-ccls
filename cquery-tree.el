@@ -123,8 +123,13 @@
 (defvar-local cquery-tree--visible-root nil
   ".")
 
+(defvar-local cquery-tree--origin-buffer nil
+  "Buffer that the tree was opened from.")
 (defvar-local cquery-tree--origin-win nil
-  "Window that the current call tree was opened from.")
+  "Win that the tree was opened from.")
+
+(defvar-local cquery-tree--opoint 1
+  "The original point of the buffer that the tree was opened from.")
 
 (defun cquery-tree--refresh ()
   (let ((p (point)))
@@ -177,7 +182,8 @@
 
 (defun cquery-tree--open (client)
   "."
-  (let ((lsp-ws lsp--cur-workspace)
+  (let ((opoint (point))
+        (lsp-ws lsp--cur-workspace)
         (root-node-data (cquery-tree--request-init client))
         (orig-buf (current-buffer))
         (bufname (format "*cquery-tree %s*" (cquery-tree-client-name client))))
@@ -185,7 +191,9 @@
       (cquery-tree-mode)
       (setq lsp--cur-workspace lsp-ws
             cquery-tree--cur-client client
+            cquery-tree--origin-buffer orig-buf
             cquery-tree--origin-win (get-buffer-window orig-buf)
+            cquery-tree--opoint opoint
             cquery-tree--root-nodes (when root-node-data (cquery-tree--read-node root-node-data))
             cquery-tree--visible-root cquery-tree--root-nodes)
       (when (null cquery-tree--root-nodes)
@@ -302,6 +310,15 @@
         (cquery-tree-toggle-expand)
       (cquery-tree-select-parent))))
 
+(defun cquery-tree-quit ()
+  (interactive)
+  (when-let* ((buf cquery-tree--origin-buffer)
+              (opoint cquery-tree--opoint))
+    (with-selected-window cquery-tree--origin-win
+      (switch-to-buffer buf)
+      (goto-char opoint)))
+  (quit-window))
+
 ;; ---------------------------------------------------------------------
 ;;   Mode
 ;; ---------------------------------------------------------------------
@@ -316,7 +333,9 @@
     (define-key map (kbd "j") 'cquery-tree-next-line)
     (define-key map (kbd "k") 'cquery-tree-prev-line)
     (define-key map (kbd "l") 'cquery-tree-expand-or-set-root)
-    (define-key map (kbd "<return>") 'cquery-tree-press-and-switch)
+    (define-key map (kbd "q") 'cquery-tree-quit)
+    (define-key map (kbd "Q") 'quit-window)
+    (define-key map (kbd "RET") 'cquery-tree-press-and-switch)
     (define-key map (kbd "<left>") 'cquery-tree-collapse-or-select-parent)
     (define-key map (kbd "<right>") 'cquery-tree-expand-or-set-root)
     map)
