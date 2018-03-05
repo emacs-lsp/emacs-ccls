@@ -218,16 +218,6 @@ If nil, disable semantic highlighting."
            (1 (funcall fn cquery-sem-function-faces))
            (_ (funcall fn cquery-sem-variable-faces)))))))
 
-(defun cquery--read-semantic-ranges (symbol face)
-  (--map (let ((start (gethash "start" it))
-               (end (gethash "end" it)))
-           (list (cons (gethash "line" start)
-                       (gethash "character" start))
-                 (cons (gethash "line" end)
-                       (gethash "character" end))
-                 face))
-         (gethash "ranges" symbol)))
-
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "Publish semantic highlighting information according to PARAMS."
   (when cquery-sem-highlight-method

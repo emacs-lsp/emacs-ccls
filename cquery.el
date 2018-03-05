@@ -43,7 +43,6 @@
 (require 'cquery-inheritance-hierarchy)
 (require 'cquery-member-hierarchy)
 
-(require 'ht)
 (require 'seq)
 
 ;; ---------------------------------------------------------------------
@@ -129,7 +128,7 @@ root location or `nil' if another matcher should be used instead.
   (lsp--cur-workspace-check)
   (-when-let* ((mode major-mode)
                (info (cquery-file-info))
-               (args (seq-into (ht-get info "args") 'vector))
+               (args (seq-into (gethash "args" info) 'vector))
                (new-args (let ((i 0) ret)
                            (while (< i (length args))
                              (let ((arg (elt args i)))
