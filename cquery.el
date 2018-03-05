@@ -86,17 +86,17 @@ Relative to the project root directory."
 (defcustom cquery-project-roots
   nil
   "A list of project roots that will be matched against the source filename first
-to get the project root before consulting `cquery-project-root-matchers'.
+to get the project root.
 
-This is useful when your project has subprojects. Otherwise `projectile' and
-`project' may think the file resides in a subproject and thus the file
-does not belong to the current workspace.
+This is used by `cquery-project-roots-matcher', useful when your project has
+subprojects. Otherwise `projectile' and `project' may think the file resides
+in a subproject and thus does not belong to the current workspace.
 "
   :type '(repeat directory)
   :group 'cquery)
 
 (defcustom cquery-project-root-matchers
-  '(projectile-project-root "compile_commands.json" ".cquery")
+  '(cquery-project-roots-matcher projectile-project-root "compile_commands.json" ".cquery")
   "List of matchers that are used to locate the cquery project roots.
 Each matcher is run in order, and the first successful (non-nil) matcher
 determines the project root.
@@ -107,7 +107,7 @@ upwards through the project directory structure and return the first
 matching file.
 
 A `function' entry define a callable function that either returns workspace's
-root location or `nil' if another matcher should be used instead.
+root location or `nil' if subsequent matchers should be used instead.
 "
   :type '(repeat (choice (file) (function)))
   :group 'cquery)

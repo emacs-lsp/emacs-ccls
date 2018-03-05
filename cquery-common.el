@@ -51,11 +51,13 @@
 (defsubst cquery--root-from-func (func)
   (and (fboundp func) (ignore-errors (funcall func))))
 
-(cl-defun cquery--get-root ()
-  "Return the root directory of a cquery project."
+(cl-defun cquery-project-roots-matcher ()
   (cl-loop for root in cquery-project-roots do
            (when (string-prefix-p (expand-file-name root) buffer-file-name)
-             (cl-return-from cquery--get-root root)))
+             (cl-return-from cquery--get-root root))))
+
+(cl-defun cquery--get-root ()
+  "Return the root directory of a cquery project."
   (cl-loop for matcher in cquery-project-root-matchers do
            (-when-let (root (cl-typecase matcher
                               (string (cquery--root-from-file matcher))
