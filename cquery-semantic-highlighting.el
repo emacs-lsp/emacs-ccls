@@ -46,8 +46,13 @@
   "The additional face for global variables."
   :group 'cquery-sem)
 
+(defface cquery-sem-local-face
+  '((t :weight normal))
+  "The additional face for local entities."
+  :group 'cquery-sem)
+
 (defface cquery-sem-local-function-face
-  '((t :weight light))
+  '((t :inherit cquery-sem-local-face))
   "The additional face for local functions."
   :group 'cquery-sem)
 
