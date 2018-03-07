@@ -41,6 +41,16 @@
 (defvar cquery-sem-face-function 'cquery-sem--default-face
   "Function used to determine the face of a symbol in semantic highlighting.")
 
+(defface cquery-sem-global-variable-face
+  '((t :weight extra-bold))
+  "The additional face for global variables."
+  :group 'cquery-sem)
+
+(defface cquery-sem-local-function-face
+  '((t :weight light))
+  "The additional face for local functions."
+  :group 'cquery-sem)
+
 (defface cquery-sem-member-face
   '((t :slant italic))
   "The extra face applied to member functions/variables."
@@ -187,7 +197,9 @@ If nil, disable semantic highlighting."
            cquery-sem-member-face)) ; Method
       (9 `(,(funcall fn0 cquery-sem-function-faces 800 1000)
            cquery-sem-member-face)) ; Constructor
-      (12 (funcall fn0 cquery-sem-function-faces 0 1000)) ; Function
+      (12 `(,(funcall fn0 cquery-sem-function-faces 0 1000)
+            ,@(when (= storage 3)
+                '(cquery-sem-local-function-face)))) ; Function
       (254 `(,(funcall fn0 cquery-sem-function-faces 0 1000)
              cquery-sem-static-method-face)) ; StaticMethod
 
@@ -201,7 +213,9 @@ If nil, disable semantic highlighting."
 
       ;; Variables
       (13 `(,(funcall fn0 cquery-sem-variable-faces 0 1000)
-            ,@(when (or (= parent-kind 1) (= storage 3))
+            ,@(when (member parent-kind '(1 3))
+                '(cquery-sem-global-variable-face))
+            ,@(when (= storage 3)
                 '(cquery-sem-static-face)))) ; Variable
       (253 (funcall fn0 cquery-sem-parameter-faces 0 1000)) ; Parameter
       (255 (funcall fn0 cquery-sem-macro-faces 0 1000)) ; Macro
