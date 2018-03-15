@@ -277,7 +277,7 @@ If nil, disable semantic highlighting."
               (pcase cquery-sem-highlight-method
                 ('font-lock
                  (dolist (x overlays)
-                   (set-text-properties (car x) (cadr x) `(face nil font-lock-face ,(caddr x)))))
+                   (set-text-properties (car x) (cadr x) `(fontified t face ,(caddr x)))))
                 ('overlay
                  (dolist (x overlays)
                    (let ((ov (make-overlay (car x) (cadr x))))
@@ -318,20 +318,19 @@ If nil, disable semantic highlighting."
 
 (defun cquery--set-inactive-regions (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
-  (let* ((file (lsp--uri-to-path (gethash "uri" params)))
-         (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
-         (buffer (find-buffer-visiting file)))
-    (when buffer
-      (with-current-buffer buffer
-        (save-excursion
-          (cquery--clear-inactive-regions)
-          (when cquery-enable-inactive-region
-            (overlay-recenter (point-max))
-            (dolist (region regions)
-              (let ((ov (make-overlay (car region) (cdr region) buffer)))
-                (overlay-put ov 'face 'cquery-inactive-region-face)
-                (overlay-put ov 'cquery-inactive t)
-                (push ov cquery--inactive-overlays)))))))))
+  (when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
+              (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
+              (buffer (find-buffer-visiting file)))
+    (with-current-buffer buffer
+       (save-excursion
+         (cquery--clear-inactive-regions)
+         (when cquery-enable-inactive-region
+           (overlay-recenter (point-max))
+           (dolist (region regions)
+             (let ((ov (make-overlay (car region) (cdr region) buffer)))
+               (overlay-put ov 'face 'cquery-inactive-region-face)
+               (overlay-put ov 'cquery-inactive t)
+               (push ov cquery--inactive-overlays))))))))
 
 ;; Add handler
 (push '("$cquery/setInactiveRegions" . (lambda (w p) (cquery--set-inactive-regions w p)))
