@@ -1,3 +1,5 @@
+[![MELPA](https://melpa.org/packages/cquery-badge.svg)](https://melpa.org/#/cquery)
+
 # emacs-cquery
 
 emacs-cquery is a client for [cquery](https://github.com/jacobdufault/cquery), a low-latency language server supporting multi-million line C++ code-bases, powered by libclang.
