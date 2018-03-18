@@ -240,16 +240,16 @@ If nil, disable semantic highlighting."
 (defun cquery--publish-semantic-highlighting (_workspace params)
   "Publish semantic highlighting information according to PARAMS."
   (when cquery-sem-highlight-method
-    (when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
-                (buffer (find-buffer-visiting file))
-                (symbols (gethash "symbols" params)))
+    (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
+                 (buffer (find-buffer-visiting file))
+                 (symbols (gethash "symbols" params)))
       (with-current-buffer buffer
         (save-excursion
           (with-silent-modifications
             (cquery--clear-sem-highlights)
             (let (ranges point0 point1 (line 0) overlays)
               (dolist (symbol symbols)
-                (when-let* ((face (funcall cquery-sem-face-function symbol)))
+                (-when-let* ((face (funcall cquery-sem-face-function symbol)))
                   (dolist (range (gethash "ranges" symbol))
                     (-let (((&hash "start" start "end" end) range))
                       (push (list (gethash "line" start) (gethash "character" start)
@@ -318,9 +318,9 @@ If nil, disable semantic highlighting."
 
 (defun cquery--set-inactive-regions (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
-  (when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
-              (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
-              (buffer (find-buffer-visiting file)))
+  (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
+               (regions (mapcar 'cquery--read-range (gethash "inactiveRegions" params)))
+               (buffer (find-buffer-visiting file)))
     (with-current-buffer buffer
        (save-excursion
          (cquery--clear-inactive-regions)

@@ -312,7 +312,7 @@
 
 (defun cquery-tree-next-sibling (&optional arg)
   (interactive "p")
-  (when-let* ((depth (cquery-tree--depth-at-point)))
+  (-when-let* ((depth (cquery-tree--depth-at-point)))
     (while (and (forward-line 1)
                 (< depth (or (cquery-tree--depth-at-point) 0))))
     (when cquery-tree-calling
@@ -320,7 +320,7 @@
 
 (defun cquery-tree-prev-sibling (&optional arg)
   (interactive "p")
-  (when-let* ((depth (cquery-tree--depth-at-point)))
+  (-when-let* ((depth (cquery-tree--depth-at-point)))
     (while (and (forward-line -1)
                 (< depth (or (cquery-tree--depth-at-point) 0))))
     (when cquery-tree-calling
@@ -346,9 +346,9 @@
 
 (defun cquery-tree-quit ()
   (interactive)
-  (when-let* ((buf cquery-tree--origin-buffer)
-              (opoint cquery-tree--opoint)
-              (_ (window-live-p cquery-tree--origin-win)))
+  (-when-let* ((buf cquery-tree--origin-buffer)
+               (opoint cquery-tree--opoint)
+               (_ (window-live-p cquery-tree--origin-win)))
     (with-selected-window cquery-tree--origin-win
       (switch-to-buffer buf)
       (goto-char opoint)))
