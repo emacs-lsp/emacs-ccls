@@ -277,7 +277,8 @@ If nil, disable semantic highlighting."
               (pcase cquery-sem-highlight-method
                 ('font-lock
                  (dolist (x overlays)
-                   (set-text-properties (car x) (cadr x) `(fontified t face ,(caddr x)))))
+                   (set-text-properties (car x) (cadr x)
+                                        `(fontified t face ,(caddr x) font-lock-face ,(caddr x)))))
                 ('overlay
                  (dolist (x overlays)
                    (let ((ov (make-overlay (car x) (cadr x))))
