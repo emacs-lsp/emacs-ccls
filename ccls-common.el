@@ -1,6 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
+;; Copyright (C) 2018 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -32,50 +33,50 @@
 ;;   Customization
 ;; ---------------------------------------------------------------------
 
-(defgroup cquery nil
-  "Customization options for the cquery client"
+(defgroup ccls nil
+  "Customization options for the ccls client"
   :group 'tools)
 
 ;; ---------------------------------------------------------------------
 ;;   Utility
 ;; ---------------------------------------------------------------------
 
-(defun cquery--read-range (range)
+(defun ccls--read-range (range)
   (cons (lsp--position-to-point (gethash "start" range))
         (lsp--position-to-point (gethash "end" range))))
 
-(defsubst cquery--root-from-file (file)
+(defsubst ccls--root-from-file (file)
   (-when-let (match (locate-dominating-file default-directory file))
     (expand-file-name match)))
 
-(defsubst cquery--root-from-func (func)
+(defsubst ccls--root-from-func (func)
   (and (fboundp func) (ignore-errors (funcall func))))
 
-(cl-defun cquery-project-roots-matcher ()
-  (cl-loop for root in cquery-project-roots do
+(cl-defun ccls-project-roots-matcher ()
+  (cl-loop for root in ccls-project-roots do
            (when (string-prefix-p (expand-file-name root) buffer-file-name)
-             (cl-return-from cquery--get-root root))))
+             (cl-return-from ccls--get-root root))))
 
-(cl-defun cquery--get-root ()
-  "Return the root directory of a cquery project."
-  (cl-loop for matcher in cquery-project-root-matchers do
+(cl-defun ccls--get-root ()
+  "Return the root directory of a ccls project."
+  (cl-loop for matcher in ccls-project-root-matchers do
            (-when-let (root (cl-typecase matcher
-                              (string (cquery--root-from-file matcher))
-                              (function  (cquery--root-from-func matcher))))
-             (cl-return-from cquery--get-root root)))
-  (user-error "Could not find cquery project root"))
+                              (string (ccls--root-from-file matcher))
+                              (function  (ccls--root-from-func matcher))))
+             (cl-return-from ccls--get-root root)))
+  (user-error "Could not find ccls project root"))
 
-(defun cquery--is-cquery-buffer (&optional buffer)
-  "Return non-nil if current buffer is using the cquery client"
+(defun ccls--is-ccls-buffer (&optional buffer)
+  "Return non-nil if current buffer is using the ccls client"
   (with-current-buffer (or buffer (current-buffer))
     (and lsp--cur-workspace
-         (eq (lsp--client-get-root (lsp--workspace-client lsp--cur-workspace)) 'cquery--get-root))))
+         (eq (lsp--client-get-root (lsp--workspace-client lsp--cur-workspace)) 'ccls--get-root))))
 
-(define-inline cquery--cquery-buffer-check ()
-  (inline-quote (cl-assert (cquery--is-cquery-buffer) nil
-                           "Cquery is not enabled in this buffer.")))
+(define-inline ccls--ccls-buffer-check ()
+  (inline-quote (cl-assert (ccls--is-ccls-buffer) nil
+                           "ccls is not enabled in this buffer.")))
 
-(defun cquery--get-renderer ()
+(defun ccls--get-renderer ()
   (thread-last lsp--cur-workspace
     lsp--workspace-client
     lsp--client-string-renderers
@@ -85,19 +86,19 @@
                     (funcall (current-buffer))))
     cdr))
 
-(defun cquery--render-string (str)
-  (funcall (cquery--get-renderer) str))
+(defun ccls--render-string (str)
+  (funcall (ccls--get-renderer) str))
 
-(defun cquery--render-type (str)
+(defun ccls--render-type (str)
   "Render a string as a type"
-  (string-remove-suffix " a;" (cquery--render-string (format "%s a;" str))))
+  (string-remove-suffix " a;" (ccls--render-string (format "%s a;" str))))
 
 ;; ---------------------------------------------------------------------
 ;;   Notification handlers
 ;; ---------------------------------------------------------------------
 
-(defvar cquery--handlers
-  '(("$cquery/progress" . (lambda (_w _p))))
+(defvar ccls--handlers
+  '(("$ccls/progress" . (lambda (_w _p))))
   "List of cons-cells of (METHOD . HANDLER) pairs, where METHOD is the lsp method to handle, 
 and handler is a function invoked as (handler WORKSPACE PARAMS), where WORKSPACE is the current
 lsp-workspace, and PARAMS is a hashmap of the params recieved with the notification.")
@@ -106,32 +107,32 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
 ;;   Commands
 ;; ---------------------------------------------------------------------
 
-(defun cquery--execute-command (command &optional arguments)
-  "Execute a cquery command."
+(defun ccls--execute-command (command &optional arguments)
+  "Execute a ccls command."
   (let* ((uri (car arguments))
          (data (cdr arguments)))
     (save-current-buffer
       (find-file (lsp--uri-to-path uri))
       (pcase command
         ;; Code actions
-        ('"cquery._applyFixIt"
+        ('"ccls._applyFixIt"
          (dolist (edit data)
-           (cquery--apply-textedit (car edit))))
-        ('"cquery._autoImplement"
+           (ccls--apply-textedit (car edit))))
+        ('"ccls._autoImplement"
          (dolist (edit data)
-           (cquery--apply-textedit (car edit)))
+           (ccls--apply-textedit (car edit)))
          (goto-char (lsp--position-to-point
                      (gethash "start" (gethash "range" (caar data))))))
-        ('"cquery._insertInclude"
-         (cquery--select-textedit data "Include: "))
-        ('"cquery.showReferences" ;; Used by code lenses
+        ('"ccls._insertInclude"
+         (ccls--select-textedit data "Include: "))
+        ('"ccls.showReferences" ;; Used by code lenses
          (xref--show-xrefs (lsp--locations-to-xref-items (cadr data)) nil))
         (_
          (message "unknown command: %s" command))))))
 
-(defun cquery--select-textedit (edit-list prompt)
+(defun ccls--select-textedit (edit-list prompt)
   "Show a list of possible textedits, and apply the selected.
-  Used by cquery._insertInclude"
+  Used by ccls._insertInclude"
   (let ((name-func (lambda (edit)
                      (concat (lsp--position-to-point
                               (gethash "start" (gethash "range" edit)))
@@ -146,9 +147,9 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
                         (cl-loop
                          for edit in edit-list
                          do (when (equal (funcall name-func edit) str)
-                              (cquery--apply-textedit edit)))))))
+                              (ccls--apply-textedit edit)))))))
 
-(defun cquery--apply-textedit (edit)
+(defun ccls--apply-textedit (edit)
   (let* ((range (gethash "range" edit))
          (start (lsp--position-to-point (gethash "start" range)))
          (end (lsp--position-to-point (gethash "end" range)))
@@ -158,13 +159,12 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
     (goto-char start)
     (insert newText)))
 
-(defun cquery--execute-command-locally-advice (orig-func command args)
-  "Cquery currently doesn't support `workspace/executeCommand', so execute those locally.
-Keep an eye on https://github.com/jacobdufault/cquery/issues/283"
-  (if (cquery--is-cquery-buffer)
-      (cquery--execute-command command args)
+(defun ccls--execute-command-locally-advice (orig-func command args)
+  "ccls currently doesn't support `workspace/executeCommand', so execute those locally."
+  (if (ccls--is-ccls-buffer)
+      (ccls--execute-command command args)
     (funcall orig-func args)))
 
-(advice-add 'lsp--send-execute-command :around #'cquery--execute-command-locally-advice)
+(advice-add 'lsp--send-execute-command :around #'ccls--execute-command-locally-advice)
 
-(provide 'cquery-common)
+(provide 'ccls-common)

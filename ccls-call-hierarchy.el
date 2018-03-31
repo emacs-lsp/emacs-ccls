@@ -1,6 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
+;; Copyright (C) 2018 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -22,117 +23,117 @@
 
 ;;; Code:
 
-(require 'cquery-common)
-(require 'cquery-tree)
+(require 'ccls-common)
+(require 'ccls-tree)
 
 ;; ---------------------------------------------------------------------
 ;;   Customization
 ;; ---------------------------------------------------------------------
 
-(defface cquery-call-hierarchy-node-normal-face
+(defface ccls-call-hierarchy-node-normal-face
   nil
   "."
-  :group 'cquery)
+  :group 'ccls)
 
-(defface cquery-call-hierarchy-node-base-face
+(defface ccls-call-hierarchy-node-base-face
   '((t (:foreground "orange red")))
   "."
-  :group 'cquery)
+  :group 'ccls)
 
-(defface cquery-call-hierarchy-node-derived-face
+(defface ccls-call-hierarchy-node-derived-face
   '((t (:foreground "orange")))
   "."
-  :group 'cquery)
+  :group 'ccls)
 
-(defcustom cquery-call-hierarchy-use-detailed-name nil
+(defcustom ccls-call-hierarchy-use-detailed-name nil
   "Use detailed name for call hierarchy"
-  :group 'cquery
+  :group 'ccls
   :type 'boolean)
 
 ;; ---------------------------------------------------------------------
 ;;   Tree node
 ;; ---------------------------------------------------------------------
 
-(cl-defstruct cquery-call-hierarchy-node
+(cl-defstruct ccls-call-hierarchy-node
   id
   name
   call-type)
 
-(defun cquery-call-hierarchy--read-node (data &optional parent)
+(defun ccls-call-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
   (-let* ((location (gethash "location" data))
           (filename (lsp--uri-to-path (gethash "uri" location)))
           ((&hash "id" id "name" name "callType" call-type) data))
-    (make-cquery-tree-node
+    (make-ccls-tree-node
      :location (cons filename (gethash "start" (gethash "range" location)))
      :has-children (< 0 (gethash "numChildren" data))
      :parent parent
      :expanded nil
      :children nil
-     :data (make-cquery-call-hierarchy-node
+     :data (make-ccls-call-hierarchy-node
             :id id
             :name name
             :call-type call-type))))
 
-(defun cquery-call-hierarchy--request-children (callee node)
+(defun ccls-call-hierarchy--request-children (callee node)
   "."
-  (let ((id (cquery-call-hierarchy-node-id (cquery-tree-node-data node))))
-    (--map (cquery-call-hierarchy--read-node it node)
+  (let ((id (ccls-call-hierarchy-node-id (ccls-tree-node-data node))))
+    (--map (ccls-call-hierarchy--read-node it node)
            (gethash "children"
                     (lsp--send-request
-                     (lsp--make-request "$cquery/callHierarchy"
+                     (lsp--make-request "$ccls/callHierarchy"
                                         `(:id ,id
                                               :callee ,callee
                                               :callType 3
-                                              :levels ,cquery-tree-initial-levels
-                                              :detailedName ,(if cquery-call-hierarchy-use-detailed-name t :json-false)
+                                              :levels ,ccls-tree-initial-levels
+                                              :detailedName ,(if ccls-call-hierarchy-use-detailed-name t :json-false)
                                               )))))))
 
-(defun cquery-call-hierarchy--request-init (callee)
+(defun ccls-call-hierarchy--request-init (callee)
   "."
-  (cquery--cquery-buffer-check)
+  (ccls--ccls-buffer-check)
   (lsp--send-request
-   (lsp--make-request "$cquery/callHierarchy"
+   (lsp--make-request "$ccls/callHierarchy"
                       `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                                       :position ,(lsp--cur-position)
                                       :callee ,callee
                                       :callType 3
-                                      :detailedName ,(if cquery-call-hierarchy-use-detailed-name t :json-false)
+                                      :detailedName ,(if ccls-call-hierarchy-use-detailed-name t :json-false)
                                       ))))
 
-(defun cquery-call-hierarchy--make-string (node depth)
+(defun ccls-call-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
-  (let ((data (cquery-tree-node-data node)))
+  (let ((data (ccls-tree-node-data node)))
     (if (= depth 0)
-        (cquery-call-hierarchy-node-name data)
+        (ccls-call-hierarchy-node-name data)
       (concat
-       (propertize (cquery-call-hierarchy-node-name data)
-                   'face (pcase (cquery-call-hierarchy-node-call-type data)
-                           ('0 'cquery-call-hierarchy-node-normal-face)
-                           ('1 'cquery-call-hierarchy-node-base-face)
-                           ('2 'cquery-call-hierarchy-node-derived-face)))
+       (propertize (ccls-call-hierarchy-node-name data)
+                   'face (pcase (ccls-call-hierarchy-node-call-type data)
+                           ('0 'ccls-call-hierarchy-node-normal-face)
+                           ('1 'ccls-call-hierarchy-node-base-face)
+                           ('2 'ccls-call-hierarchy-node-derived-face)))
        (propertize (format " (%s:%s)"
-                           (file-name-nondirectory (car (cquery-tree-node-location node)))
-                           (gethash "line" (cdr (cquery-tree-node-location node))))
-                   'face 'cquery-mode-line-face)))))
+                           (file-name-nondirectory (car (ccls-tree-node-location node)))
+                           (gethash "line" (cdr (ccls-tree-node-location node))))
+                   'face 'ccls-mode-line-face)))))
 
-(defun cquery-call-hierarchy (callee)
+(defun ccls-call-hierarchy (callee)
   (interactive "P")
-  (cquery--cquery-buffer-check)
+  (ccls--ccls-buffer-check)
   (setq callee (if callee t :json-false))
-  (cquery-tree--open
-   (make-cquery-tree-client
+  (ccls-tree--open
+   (make-ccls-tree-client
     :name "call hierarchy"
     :mode-line-format (format " %s %s %s %s"
-                              (propertize (if (eq callee t) "Callee types:" "Caller types:") 'face 'cquery-tree-mode-line-face)
-                              (propertize "Normal" 'face 'cquery-call-hierarchy-node-normal-face)
-                              (propertize "Base" 'face 'cquery-call-hierarchy-node-base-face)
-                              (propertize "Derived" 'face 'cquery-call-hierarchy-node-derived-face))
-    :top-line-f (lambda () (propertize (if (eq callee t) "Callees of " "Callers of") 'face 'cquery-tree-mode-line-face))
-    :make-string-f 'cquery-call-hierarchy--make-string
-    :read-node-f 'cquery-call-hierarchy--read-node
-    :request-children-f (apply-partially #'cquery-call-hierarchy--request-children callee)
-    :request-init-f (lambda () (cquery-call-hierarchy--request-init callee)))))
+                              (propertize (if (eq callee t) "Callee types:" "Caller types:") 'face 'ccls-tree-mode-line-face)
+                              (propertize "Normal" 'face 'ccls-call-hierarchy-node-normal-face)
+                              (propertize "Base" 'face 'ccls-call-hierarchy-node-base-face)
+                              (propertize "Derived" 'face 'ccls-call-hierarchy-node-derived-face))
+    :top-line-f (lambda () (propertize (if (eq callee t) "Callees of " "Callers of") 'face 'ccls-tree-mode-line-face))
+    :make-string-f 'ccls-call-hierarchy--make-string
+    :read-node-f 'ccls-call-hierarchy--read-node
+    :request-children-f (apply-partially #'ccls-call-hierarchy--request-children callee)
+    :request-init-f (lambda () (ccls-call-hierarchy--request-init callee)))))
 
-(provide 'cquery-call-hierarchy)
-;;; cquery-call-hierarchy.el ends here
+(provide 'ccls-call-hierarchy)
+;;; ccls-call-hierarchy.el ends here

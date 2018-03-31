@@ -1,6 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
+;; Copyright (C) 2018 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -22,86 +23,86 @@
 
 ;;; Code:
 
-(require 'cquery-common)
-(require 'cquery-tree)
+(require 'ccls-common)
+(require 'ccls-tree)
 
-(defcustom cquery-member-hierarchy-use-detailed-name t
+(defcustom ccls-member-hierarchy-use-detailed-name t
   "Use detailed name for member hierarchy"
-  :group 'cquery
+  :group 'ccls
   :type 'boolean)
 
 ;; ---------------------------------------------------------------------
 ;;   Tree node
 ;; ---------------------------------------------------------------------
 
-(cl-defstruct cquery-member-hierarchy-node
+(cl-defstruct ccls-member-hierarchy-node
   name
   field-name
   id)
 
-(defun cquery-member-hierarchy--read-node (data &optional parent)
+(defun ccls-member-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
   (-let* (((&hash "location" location "numChildren" nchildren "name" name "fieldName" field-name "id" id "children" children) data)
           (filename (lsp--uri-to-path (gethash "uri" location)))
           (node
-           (make-cquery-tree-node
+           (make-ccls-tree-node
             :location (cons filename (gethash "start" (gethash "range" location)))
             ;; With a little bit of luck, this only filters out enums
             :has-children (not (or (>= 0 nchildren)
                                    (null parent)
-                                   (= id (cquery-member-hierarchy-node-id (cquery-tree-node-data parent)))))
+                                   (= id (ccls-member-hierarchy-node-id (ccls-tree-node-data parent)))))
             :parent parent
             :expanded nil
             :children nil
-            :data (make-cquery-member-hierarchy-node
+            :data (make-ccls-member-hierarchy-node
                    :name name
                    :field-name field-name
                    :id id))))
-    (setf (cquery-tree-node-children node)
-          (--map (cquery-member-hierarchy--read-node it node)
+    (setf (ccls-tree-node-children node)
+          (--map (ccls-member-hierarchy--read-node it node)
                  children))
     node))
 
-(defun cquery-member-hierarchy--request-children (node)
+(defun ccls-member-hierarchy--request-children (node)
   "."
-  (let ((id (cquery-member-hierarchy-node-id (cquery-tree-node-data node))))
-    (--map (cquery-member-hierarchy--read-node it node)
+  (let ((id (ccls-member-hierarchy-node-id (ccls-tree-node-data node))))
+    (--map (ccls-member-hierarchy--read-node it node)
            (gethash "children" (lsp--send-request
-                                (lsp--make-request "$cquery/memberHierarchy"
+                                (lsp--make-request "$ccls/memberHierarchy"
                                                    `(:id ,id
-                                                         :levels ,cquery-tree-initial-levels
-                                                         :detailedName ,(if cquery-member-hierarchy-use-detailed-name t :json-false))))))))
+                                                         :levels ,ccls-tree-initial-levels
+                                                         :detailedName ,(if ccls-member-hierarchy-use-detailed-name t :json-false))))))))
 
-(defun cquery-member-hierarchy--request-init ()
+(defun ccls-member-hierarchy--request-init ()
   "."
-  (cquery--cquery-buffer-check)
+  (ccls--ccls-buffer-check)
   (lsp--send-request
-   (lsp--make-request "$cquery/memberHierarchy"
+   (lsp--make-request "$ccls/memberHierarchy"
                       `(
                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                         :position ,(lsp--cur-position)
                         :levels 1
-                        :detailedName ,(if cquery-member-hierarchy-use-detailed-name t :json-false)))))
+                        :detailedName ,(if ccls-member-hierarchy-use-detailed-name t :json-false)))))
 
-(defun cquery-member-hierarchy--make-string (node depth)
+(defun ccls-member-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
-  (let ((data (cquery-tree-node-data node)))
-    (cquery--render-string (if (eq depth 0)
-                               (cquery-member-hierarchy-node-name data)
-                             (cquery-member-hierarchy-node-field-name data)))))
+  (let ((data (ccls-tree-node-data node)))
+    (ccls--render-string (if (eq depth 0)
+                               (ccls-member-hierarchy-node-name data)
+                             (ccls-member-hierarchy-node-field-name data)))))
 
-(defun cquery-member-hierarchy ()
+(defun ccls-member-hierarchy ()
   (interactive)
-  (cquery--cquery-buffer-check)
-  (cquery-tree--open
-   (make-cquery-tree-client
+  (ccls--ccls-buffer-check)
+  (ccls-tree--open
+   (make-ccls-tree-client
     :name "member hierarchy"
-    :mode-line-format (propertize "Member hierarchy" 'face 'cquery-tree-mode-line-face)
-    :top-line-f (lambda () (propertize "Members of" 'face 'cquery-tree-mode-line-face))
-    :make-string-f 'cquery-member-hierarchy--make-string
-    :read-node-f 'cquery-member-hierarchy--read-node
-    :request-children-f 'cquery-member-hierarchy--request-children
-    :request-init-f 'cquery-member-hierarchy--request-init)))
+    :mode-line-format (propertize "Member hierarchy" 'face 'ccls-tree-mode-line-face)
+    :top-line-f (lambda () (propertize "Members of" 'face 'ccls-tree-mode-line-face))
+    :make-string-f 'ccls-member-hierarchy--make-string
+    :read-node-f 'ccls-member-hierarchy--read-node
+    :request-children-f 'ccls-member-hierarchy--request-children
+    :request-init-f 'ccls-member-hierarchy--request-init)))
 
-(provide 'cquery-member-hierarchy)
-;;; cquery-member-hierarchy.el ends here
+(provide 'ccls-member-hierarchy)
+;;; ccls-member-hierarchy.el ends here
