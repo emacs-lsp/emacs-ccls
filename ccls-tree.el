@@ -38,6 +38,7 @@
 
 (defcustom ccls-tree-initial-levels 2
   "."
+  :type 'integer
   :group 'ccls-tree)
 
 (defface ccls-tree-root-face
@@ -258,12 +259,12 @@
   (when (setq ccls-tree-calling (not ccls-tree-calling))
     (ccls-tree-press)))
 
-(defun ccls-tree-press (&optional split-fn)
+(defun ccls-tree-press (&optional _split)
   "Jump to the location."
   (interactive)
   (-when-let* ((workspace lsp--cur-workspace)
                (node (ccls-tree--node-at-point))
-               (_ (window-live-p ccls-tree--origin-win)))
+               (unused (window-live-p ccls-tree--origin-win)))
     (with-selected-window ccls-tree--origin-win
       (when split-fn
         (funcall split-fn))
@@ -311,7 +312,7 @@
   (when ccls-tree-calling
     (ccls-tree-press)))
 
-(defun ccls-tree-next-sibling (&optional arg)
+(defun ccls-tree-next-sibling (&optional _arg)
   (interactive "p")
   (-when-let* ((depth (ccls-tree--depth-at-point)))
     (while (and (forward-line 1)
@@ -319,7 +320,7 @@
     (when ccls-tree-calling
       (ccls-tree-press))))
 
-(defun ccls-tree-prev-sibling (&optional arg)
+(defun ccls-tree-prev-sibling (&optional _arg)
   (interactive "p")
   (-when-let* ((depth (ccls-tree--depth-at-point)))
     (while (and (forward-line -1)
@@ -337,7 +338,7 @@
         (ccls-tree-toggle-expand)))))
 
 (defun ccls-tree-collapse-or-select-parent ()
-  "If the node at point is expanded collapse it, otherwise select its parent"
+  "If the node at point is expanded collapse it, otherwise select its parent."
   (interactive)
   (-when-let* ((node (ccls-tree--node-at-point)))
     (if (and (> (ccls-tree--depth-at-point) 0)
@@ -349,7 +350,7 @@
   (interactive)
   (-when-let* ((buf ccls-tree--origin-buffer)
                (opoint ccls-tree--opoint)
-               (_ (window-live-p ccls-tree--origin-win)))
+               (unused (window-live-p ccls-tree--origin-win)))
     (with-selected-window ccls-tree--origin-win
       (switch-to-buffer buf)
       (goto-char opoint)))

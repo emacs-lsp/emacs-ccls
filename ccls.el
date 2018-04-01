@@ -3,8 +3,8 @@
 ;; Copyright (C) 2017 Tobias Pisani
 ;; Copyright (C) 2018 Fangrui Song
 
-;; Author:  Tobias Pisani
-;; Package-Version: 20180122.1
+;; Author: Tobias Pisani, Fangrui Song
+;; Package-Version: 20180131.1
 ;; Version: 0.1
 ;; Homepage: https://github.com/MaskRay/emacs-ccls
 ;; Package-Requires: ((emacs "25.1") (lsp-mode "3.4") (dash "0.13"))
@@ -32,6 +32,7 @@
 
 ;;
 ;; To enable, call (lsp-ccls-enable) in your c++-mode hook.
+;; See more at https://github.com/MaskRay/ccls/wiki/Emacs
 ;;
 
 ;;; Code:
