@@ -259,7 +259,7 @@
   (when (setq ccls-tree-calling (not ccls-tree-calling))
     (ccls-tree-press)))
 
-(defun ccls-tree-press (&optional _split)
+(defun ccls-tree-press (&optional split-fn)
   "Jump to the location."
   (interactive)
   (-when-let* ((workspace lsp--cur-workspace)

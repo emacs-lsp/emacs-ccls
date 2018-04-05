@@ -98,7 +98,7 @@ in a subproject and thus does not belong to the current workspace.
   :group 'ccls)
 
 (defcustom ccls-project-root-matchers
-  '(ccls-project-roots-matcher projectile-project-root "compile_commands.json" ".ccls")
+  '(".ccls-root" projectile-project-root ".ccls")
   "List of matchers that are used to locate the ccls project roots.
 Each matcher is run in order, and the first successful (non-nil) matcher
 determines the project root.

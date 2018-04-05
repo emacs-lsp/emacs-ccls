@@ -52,11 +52,6 @@
 (defsubst ccls--root-from-func (func)
   (and (fboundp func) (ignore-errors (funcall func))))
 
-(cl-defun ccls-project-roots-matcher ()
-  (cl-loop for root in ccls-project-roots do
-           (when (string-prefix-p (expand-file-name root) buffer-file-name)
-             (cl-return-from ccls--get-root root))))
-
 (cl-defun ccls--get-root ()
   "Return the root directory of a ccls project."
   (cl-loop for matcher in ccls-project-root-matchers do
@@ -99,7 +94,7 @@
 
 (defvar ccls--handlers
   '(("$ccls/progress" . (lambda (_w _p))))
-  "List of cons-cells of (METHOD . HANDLER) pairs, where METHOD is the lsp method to handle, 
+  "List of cons-cells of (METHOD . HANDLER) pairs, where METHOD is the lsp method to handle,
 and handler is a function invoked as (handler WORKSPACE PARAMS), where WORKSPACE is the current
 lsp-workspace, and PARAMS is a hashmap of the params recieved with the notification.")
 
