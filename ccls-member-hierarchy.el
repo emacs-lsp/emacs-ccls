@@ -26,7 +26,7 @@
 (require 'ccls-common)
 (require 'ccls-tree)
 
-(defcustom ccls-member-hierarchy-use-detailed-name t
+(defcustom ccls-member-hierarchy-qualified nil
   "Use detailed name for member hierarchy"
   :group 'ccls
   :type 'boolean)
@@ -71,7 +71,7 @@
                                 (lsp--make-request "$ccls/memberHierarchy"
                                                    `(:id ,id
                                                          :levels ,ccls-tree-initial-levels
-                                                         :detailedName ,(if ccls-member-hierarchy-use-detailed-name t :json-false))))))))
+                                                         :qualified ,(if ccls-member-hierarchy-qualified t :json-false))))))))
 
 (defun ccls-member-hierarchy--request-init ()
   "."
@@ -82,7 +82,7 @@
                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                         :position ,(lsp--cur-position)
                         :levels 1
-                        :detailedName ,(if ccls-member-hierarchy-use-detailed-name t :json-false)))))
+                        :qualified ,(if ccls-member-hierarchy-qualified t :json-false)))))
 
 (defun ccls-member-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"

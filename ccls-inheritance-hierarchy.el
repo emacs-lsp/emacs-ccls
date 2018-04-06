@@ -32,8 +32,8 @@
   "."
   :group 'ccls)
 
-(defcustom ccls-inheritance-hierarchy-use-detailed-name t
-  "Use detailed name for types in inheritance hierarchy"
+(defcustom ccls-inheritance-hierarchy-qualified t
+  "Use qualified name for types in inheritance hierarchy."
   :group 'ccls
   :type 'boolean)
 
@@ -73,7 +73,7 @@
                      (lsp--make-request "$ccls/inheritanceHierarchy"
                                         `(:id ,id :kind ,kind
                                               :derived ,derived
-                                              :detailedName ,(if ccls-inheritance-hierarchy-use-detailed-name t :json-false)
+                                              :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
                                               :levels ,ccls-tree-initial-levels)))))))
 
 (defun ccls-inheritance-hierarchy--request-init (derived)
@@ -86,7 +86,7 @@
                         :position ,(lsp--cur-position)
 
                         :derived ,derived
-                        :detailedName ,(if ccls-inheritance-hierarchy-use-detailed-name t :json-false)
+                        :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
                         :levels 1))))
 
 (defun ccls-inheritance-hierarchy--make-string (node _depth)

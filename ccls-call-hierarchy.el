@@ -45,8 +45,8 @@
   "."
   :group 'ccls)
 
-(defcustom ccls-call-hierarchy-use-detailed-name nil
-  "Use detailed name for call hierarchy"
+(defcustom ccls-call-hierarchy-qualified t
+  "Use qualified name for call hierarchy."
   :group 'ccls
   :type 'boolean)
 
@@ -86,7 +86,7 @@
                                               :callee ,callee
                                               :callType 3
                                               :levels ,ccls-tree-initial-levels
-                                              :detailedName ,(if ccls-call-hierarchy-use-detailed-name t :json-false)
+                                              :qualified ,(if ccls-call-hierarchy-qualified t :json-false)
                                               )))))))
 
 (defun ccls-call-hierarchy--request-init (callee)
@@ -98,7 +98,7 @@
                                       :position ,(lsp--cur-position)
                                       :callee ,callee
                                       :callType 3
-                                      :detailedName ,(if ccls-call-hierarchy-use-detailed-name t :json-false)
+                                      :qualified ,(if ccls-call-hierarchy-qualified t :json-false)
                                       ))))
 
 (defun ccls-call-hierarchy--make-string (node depth)
