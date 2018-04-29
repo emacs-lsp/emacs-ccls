@@ -75,7 +75,7 @@
              (root (gethash "command" lens))
              ;; (title (gethash "title" root))
              ;; (command (gethash "command" root))
-             (buffer (find-buffer-visiting (lsp--uri-to-path (car (gethash "arguments" root))))))
+             (buffer (find-buffer-visiting (lsp--uri-to-path (gethash "uri" (gethash "arguments" root))))))
         (when buffer
           (with-current-buffer buffer
             (save-excursion
@@ -94,7 +94,7 @@
   (lsp--send-request-async
    (lsp--make-request "textDocument/codeLens"
                       `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))))
-   'ccls--code-lens-callback))
+   #'ccls--code-lens-callback))
 
 (defun ccls-clear-code-lens ()
   "Clear all code lenses from this buffer."

@@ -50,7 +50,7 @@
             ;; With a little bit of luck, this only filters out enums
             :has-children (not (or (>= 0 nchildren)
                                    (null parent)
-                                   (= id (ccls-member-hierarchy-node-id (ccls-tree-node-data parent)))))
+                                   (equal id (ccls-member-hierarchy-node-id (ccls-tree-node-data parent)))))
             :parent parent
             :expanded nil
             :children nil
