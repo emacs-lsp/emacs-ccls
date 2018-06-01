@@ -204,7 +204,7 @@ If nil, disable semantic highlighting."
       (9 `(,(funcall fn0 ccls-sem-function-faces 800 1000)
            ccls-sem-member-face)) ; Constructor
       (12 `(,(funcall fn0 ccls-sem-function-faces 0 1000)
-            ,@(when (= storage 3)
+            ,@(when (= storage 2)
                 '(ccls-sem-local-function-face)))) ; Function
       (254 `(,(funcall fn0 ccls-sem-function-faces 0 1000)
              ccls-sem-static-method-face)) ; StaticMethod
@@ -221,12 +221,12 @@ If nil, disable semantic highlighting."
       (13 `(,(funcall fn0 ccls-sem-variable-faces 0 1000)
             ,@(when (member parent-kind '(1 3))
                 '(ccls-sem-global-variable-face))
-            ,@(when (= storage 3)
+            ,@(when (= storage 2)
                 '(ccls-sem-static-face)))) ; Variable
       (253 (funcall fn0 ccls-sem-parameter-faces 0 1000)) ; Parameter
       (255 (funcall fn0 ccls-sem-macro-faces 0 1000)) ; Macro
       (8 `(,(funcall fn0 ccls-sem-variable-faces 0 1000)
-           ,(if (= storage 3)
+           ,(if (= storage 2)
                 'ccls-sem-static-field-face
               'ccls-sem-member-face
               ))) ; Field
