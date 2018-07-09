@@ -34,9 +34,9 @@
   :group 'tools
   :group 'ccls)
 
-(defface ccls-inactive-region-face
+(defface ccls-skipped-range-face
   '((t :inherit shadow))
-  "The face used to mark inactive regions."
+  "The face used to mark skipped ranges."
   :group 'ccls-sem)
 
 (defvar ccls-sem-face-function 'ccls-sem--default-face
@@ -149,9 +149,9 @@
   :type '(repeat color)
   :group 'ccls-sem)
 
-(defcustom ccls-enable-inactive-region
+(defcustom ccls-enable-skipped-ranges
   t
-  "Enable inactive region.
+  "Enable skipped ranges.
 Regions that are disabled by preprocessors will be displayed in shadow."
   :group 'ccls-sem
   :type 'bool)
@@ -313,29 +313,29 @@ If nil, disable semantic highlighting."
 ;;   Inactive regions
 ;; ---------------------------------------------------------------------
 
-(defun ccls--clear-inactive-regions ()
+(defun ccls--clear-skipped-ranges ()
   "Clean up overlays."
   (while ccls--inactive-overlays
     (delete-overlay (pop ccls--inactive-overlays))))
 
-(defun ccls--set-inactive-regions (_workspace params)
+(defun ccls--set-skipped-ranges (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
   (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
-               (regions (mapcar 'ccls--read-range (gethash "inactiveRegions" params)))
+               (regions (mapcar 'ccls--read-range (gethash "skippedRanges" params)))
                (buffer (find-buffer-visiting file)))
     (with-current-buffer buffer
        (save-excursion
-         (ccls--clear-inactive-regions)
-         (when ccls-enable-inactive-region
+         (ccls--clear-skipped-ranges)
+         (when ccls-enable-skipped-ranges
            (overlay-recenter (point-max))
            (dolist (region regions)
              (let ((ov (make-overlay (car region) (cdr region) buffer)))
-               (overlay-put ov 'face 'ccls-inactive-region-face)
+               (overlay-put ov 'face 'ccls-skipped-range-face)
                (overlay-put ov 'ccls-inactive t)
                (push ov ccls--inactive-overlays))))))))
 
 ;; Add handler
-(push '("$ccls/setInactiveRegions" . (lambda (w p) (ccls--set-inactive-regions w p)))
+(push '("$ccls/setSkippedRanges" . (lambda (w p) (ccls--set-skipped-ranges w p)))
       ccls--handlers)
 
 (provide 'ccls-semantic-highlighting)

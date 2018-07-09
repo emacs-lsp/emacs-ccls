@@ -5,7 +5,7 @@ emacs-ccls is a client for [ccls](https://github.com/MaskRay/ccls), a C/C++/Obje
 It leverages [lsp-mode](https://github.com/emacs-lsp/lsp-mode), but also provides some ccls extensions to LSP:
 
 * semantic highlighting
-* inactive region (e.g. a `#if false` region)
+* skipped ranges (e.g. a `#if false` region)
 * cross references: `$ccls/base` `$ccls/callers` `$ccls/derived` `$ccls/vars`
 
 More on <https://github.com/MaskRay/ccls/wiki/Emacs>
