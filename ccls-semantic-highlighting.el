@@ -245,47 +245,27 @@ If nil, disable semantic highlighting."
                  (buffer (find-buffer-visiting file))
                  (symbols (gethash "symbols" params)))
       (with-current-buffer buffer
-        (save-excursion
-          (with-silent-modifications
-            (ccls--clear-sem-highlights)
-            (let (ranges point0 point1 (line 0) overlays)
-              (dolist (symbol symbols)
-                (-when-let* ((face (funcall ccls-sem-face-function symbol)))
-                  (dolist (range (gethash "ranges" symbol))
-                    (-let (((&hash "start" start "end" end) range))
-                      (push (list (gethash "line" start) (gethash "character" start)
-                                  (gethash "line" end) (gethash "character" end) face) ranges)))))
-              ;; Sort by start-line ASC, start-character ASC.
-              ;; The server guarantees the ranges are non-overlapping.
-              (setq ranges
-                    (sort ranges (lambda (x y)
-                                   (let ((x0 (car x)) (y0 (car y)))
-                                     (if (/= x0 y0)
-                                         (< x0 y0)
-                                       (< (cadr x) (cadr y)))))))
-              (widen)
-              (goto-char 1)
-              (dolist (range ranges)
-                (-let (((l0 c0 l1 c1 face) range))
-                  (forward-line (- l0 line))
-                  (forward-char c0)
-                  (setq point0 (point))
-                  (forward-line (- l1 l0))
-                  (forward-char c1)
-                  (setq point1 (point))
-                  (setq line l1)
-                  (push (list point0 point1 face) overlays)))
-              (pcase ccls-sem-highlight-method
-                ('font-lock
-                 (dolist (x overlays)
-                   (set-text-properties (car x) (cadr x)
-                                        `(fontified t face ,(caddr x) font-lock-face ,(caddr x)))))
-                ('overlay
-                 (dolist (x overlays)
-                   (let ((ov (make-overlay (car x) (cadr x))))
-                     (overlay-put ov 'face (caddr x))
-                     (overlay-put ov 'ccls-sem-highlight t)
-                     (push ov ccls--sem-overlays))))))))))))
+        (with-silent-modifications
+          (ccls--clear-sem-highlights)
+          (let (ranges point0 point1 (line 0) overlays)
+            (dolist (symbol symbols)
+              (-when-let* ((face (funcall ccls-sem-face-function symbol)))
+                (dolist (range (gethash "ranges" symbol))
+                  (-let (((&hash "L" start "R" end) range))
+                    (push (list (1+ start) (1+ end) face) overlays)))))
+            ;; The server guarantees the ranges are non-overlapping.
+            (setq overlays (sort overlays (lambda (x y) (< (car x) (car y)))))
+            (pcase ccls-sem-highlight-method
+              ('font-lock
+               (dolist (x overlays)
+                 (set-text-properties (car x) (cadr x)
+                                      `(fontified t face ,(caddr x) font-lock-face ,(caddr x)))))
+              ('overlay
+               (dolist (x overlays)
+                 (let ((ov (make-overlay (car x) (cadr x))))
+                   (overlay-put ov 'face (caddr x))
+                   (overlay-put ov 'ccls-sem-highlight t)
+                   (push ov ccls--sem-overlays)))))))))))
 
 (defmacro ccls-use-default-rainbow-sem-highlight ()
   "Use default rainbow semantic highlighting theme."
