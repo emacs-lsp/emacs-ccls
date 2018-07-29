@@ -149,8 +149,7 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
          (start (lsp--position-to-point (gethash "start" range)))
          (end (lsp--position-to-point (gethash "end" range)))
          (newText (gethash "newText" edit)))
-    (when (> end start)
-      (delete-region start (- end 1)))
+    (delete-region start end)
     (goto-char start)
     (insert newText)))
 
