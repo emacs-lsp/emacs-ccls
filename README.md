@@ -1,3 +1,5 @@
+[![MELPA](https://melpa.org/packages/ccls-badge.svg)](https://melpa.org/#/ccls)
+
 # emacs-ccls
 
 emacs-ccls is a client for [ccls](https://github.com/MaskRay/ccls), a C/C++/Objective-C language server supporting multi-million line C++ code-bases, powered by libclang.
