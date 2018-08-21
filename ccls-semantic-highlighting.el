@@ -154,7 +154,7 @@
   "Enable skipped ranges.
 Regions that are disabled by preprocessors will be displayed in shadow."
   :group 'ccls-sem
-  :type 'bool)
+  :type 'boolean)
 
 (defcustom ccls-sem-highlight-method
   nil
