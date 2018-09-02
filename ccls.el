@@ -165,22 +165,6 @@ root location or `nil' if subsequent matchers should be used instead.
                            (list :whitelist (or whitelist [])
                                  :blacklist (or blacklist [])))))
 
-(defun ccls-xref-find-custom (method &optional display-action)
-  "Find ccls-specific cross references.
-
-Choices of METHOD include \"$ccls/base\", \"$ccls/callers\",
-\"$ccls/derived\", \"$ccls/vars\".
-Read document for all choices. DISPLAY-ACTION is passed to xref--show-xrefs."
-  (lsp--cur-workspace-check)
-  (let ((xrefs (lsp--locations-to-xref-items
-                (lsp--send-request
-                 (lsp--make-request method
-                                    (lsp--text-document-position-params))))))
-    (unless xrefs
-      (user-error "No %s found" method))
-    (xref--show-xrefs xrefs display-action)))
-
-
 ;; ---------------------------------------------------------------------
 ;;  Register lsp client
 ;; ---------------------------------------------------------------------
