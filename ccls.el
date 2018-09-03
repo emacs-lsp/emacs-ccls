@@ -165,6 +165,11 @@ root location or `nil' if subsequent matchers should be used instead.
                            (list :whitelist (or whitelist [])
                                  :blacklist (or blacklist [])))))
 
+(defun ccls-navigate (direction)
+  "Navigate to a nearby outline symbol.
+DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
+  (lsp-find-custom "$ccls/navigate" `(:direction ,direction)))
+
 ;; ---------------------------------------------------------------------
 ;;  Register lsp client
 ;; ---------------------------------------------------------------------
