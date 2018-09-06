@@ -19,12 +19,6 @@ More on <https://github.com/MaskRay/ccls/wiki/Emacs>
 (setq ccls-executable "/path/to/ccls/release/ccls")
 ```
 
-To enable comments and use Message Pack for cache files (which are stored in `cacheDirectory`):
-
-```elisp
-(setq ccls-extra-init-params '(:cacheFormat "msgpack"))
-```
-
 Refer to <https://github.com/MaskRay/ccls/wiki/Emacs> for details.
 
 ![with lsp-ui-doc, enableComments](https://camo.githubusercontent.com/fe1e12f9be72c2295d732d6265b42bde0d121ee8/68747470733a2f2f707470622e70772f5a6275462e6a7067)
