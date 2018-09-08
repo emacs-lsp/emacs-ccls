@@ -78,25 +78,6 @@ Relative to the project root directory."
   :type '(repeat string)
   :group 'ccls)
 
-(defcustom ccls-project-root-function
-  nil
-  "A function used to find the project root.
-"
-  :type '(repeat function)
-  :group 'ccls)
-
-(defcustom ccls-project-roots
-  nil
-  "A list of project roots that will be matched against the source filename first
-to get the project root.
-
-This is used by `ccls-project-roots-matcher', useful when your project has
-subprojects. Otherwise `projectile' and `project' may think the file resides
-in a subproject and thus does not belong to the current workspace.
-"
-  :type '(repeat directory)
-  :group 'ccls)
-
 (defcustom ccls-project-root-matchers
   '(".ccls-root" projectile-project-root)
   "List of matchers that are used to locate the ccls project roots.
