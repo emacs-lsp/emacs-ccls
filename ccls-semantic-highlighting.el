@@ -248,20 +248,20 @@ If nil, disable semantic highlighting."
         (with-silent-modifications
           (ccls--clear-sem-highlights)
           (let (ranges point0 point1 (line 0) overlays)
-            (dolist (symbol symbols)
+            (seq-doseq (symbol symbols)
               (-when-let* ((face (funcall ccls-sem-face-function symbol)))
-                (dolist (range (gethash "ranges" symbol))
+                (seq-doseq (range (gethash "ranges" symbol))
                   (-let (((&hash "L" start "R" end) range))
                     (push (list (1+ start) (1+ end) face) overlays)))))
             ;; The server guarantees the ranges are non-overlapping.
             (setq overlays (sort overlays (lambda (x y) (< (car x) (car y)))))
             (pcase ccls-sem-highlight-method
               ('font-lock
-               (dolist (x overlays)
+               (seq-doseq (x overlays)
                  (set-text-properties (car x) (cadr x)
                                       `(fontified t face ,(caddr x) font-lock-face ,(caddr x)))))
               ('overlay
-               (dolist (x overlays)
+               (seq-doseq (x overlays)
                  (let ((ov (make-overlay (car x) (cadr x))))
                    (overlay-put ov 'face (caddr x))
                    (overlay-put ov 'ccls-sem-highlight t)
@@ -308,7 +308,7 @@ If nil, disable semantic highlighting."
          (ccls--clear-skipped-ranges)
          (when ccls-enable-skipped-ranges
            (overlay-recenter (point-max))
-           (dolist (region regions)
+           (seq-doseq (region regions)
              (let ((ov (make-overlay (car region) (cdr region) buffer)))
                (overlay-put ov 'face 'ccls-skipped-range-face)
                (overlay-put ov 'ccls-inactive t)

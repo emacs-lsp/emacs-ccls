@@ -26,6 +26,7 @@
 (require 'cc-mode)
 (require 'lsp-mode)
 (require 'cl-lib)
+(require 'seq)
 (require 'subr-x)
 (require 'dash)
 
@@ -104,45 +105,19 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
 
 (defun ccls--execute-command (command &optional arguments)
   "Execute a ccls command."
-  (let* ((uri (car arguments))
-         (data (cdr arguments)))
+  (let* ((uri (seq-elt arguments 0))
+         (data (seq-elt arguments 1)))
     (save-current-buffer
       (find-file (lsp--uri-to-path uri))
       (pcase command
         ;; Code actions
         ('"ccls._applyFixIt"
-         (dolist (edit data)
-           (ccls--apply-textedit (car edit))))
-        ('"ccls._autoImplement"
-         (dolist (edit data)
-           (ccls--apply-textedit (car edit)))
-         (goto-char (lsp--position-to-point
-                     (gethash "start" (gethash "range" (caar data))))))
-        ('"ccls._insertInclude"
-         (ccls--select-textedit data "Include: "))
+         (seq-doseq (edit data)
+           (ccls--apply-textedit edit)))
         ('"ccls.showReferences" ;; Used by code lenses
          (xref--show-xrefs (lsp--locations-to-xref-items (cadr data)) nil))
         (_
          (message "unknown command: %s" command))))))
-
-(defun ccls--select-textedit (edit-list prompt)
-  "Show a list of possible textedits, and apply the selected.
-  Used by ccls._insertInclude"
-  (let ((name-func (lambda (edit)
-                     (concat (lsp--position-to-point
-                              (gethash "start" (gethash "range" edit)))
-                             ": "
-                             (gethash "newText" edit)))))
-    (ivy-read prompt
-              (mapcar (lambda (edit)
-                        (funcall name-func edit))
-                      edit-list)
-              :require-match t
-              :action (lambda (str)
-                        (cl-loop
-                         for edit in edit-list
-                         do (when (equal (funcall name-func edit) str)
-                              (ccls--apply-textedit edit)))))))
 
 (defun ccls--apply-textedit (edit)
   (let* ((range (gethash "range" edit))
