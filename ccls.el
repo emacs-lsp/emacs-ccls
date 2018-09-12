@@ -135,16 +135,13 @@ root location or `nil' if subsequent matchers should be used instead.
         (delay-mode-hooks (funcall mode))
         (setq buffer-read-only t)))))
 
-(defun ccls-freshen-index (&optional whitelist blacklist)
-  "Rebuild indexes for matched files.
-`whitelist' and `blacklist' are ECMAScript regex used by std::regex_match
-`regexp-quote' quotes in elisp flavored regex, so some metacharacters may fail."
-  (interactive (list (list (concat "^" (regexp-quote buffer-file-name) "$")) (list ".")))
+(defun ccls-reload ()
+  "Reset database and reload cached index files."
+  (interactive)
   (lsp--cur-workspace-check)
   (lsp--send-notification
-   (lsp--make-notification "$ccls/freshenIndex"
-                           (list :whitelist (or whitelist [])
-                                 :blacklist (or blacklist [])))))
+   (lsp--make-notification "$ccls/reload" (list :whitelist []
+                                                :blacklist []))))
 
 (defun ccls-navigate (direction)
   "Navigate to a nearby outline symbol.
