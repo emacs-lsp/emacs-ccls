@@ -68,21 +68,25 @@
   (let ((id (ccls-member-hierarchy-node-id (ccls-tree-node-data node))))
     (--map (ccls-member-hierarchy--read-node it node)
            (gethash "children" (lsp--send-request
-                                (lsp--make-request "$ccls/memberHierarchy"
+                                (lsp--make-request "$ccls/member"
                                                    `(:id ,id
                                                          :levels ,ccls-tree-initial-levels
-                                                         :qualified ,(if ccls-member-hierarchy-qualified t :json-false))))))))
+                                                         :qualified ,(if ccls-member-hierarchy-qualified t :json-false)
+                                                         :hierarchy t
+                                                         )))))))
 
 (defun ccls-member-hierarchy--request-init ()
   "."
   (ccls--ccls-buffer-check)
   (lsp--send-request
-   (lsp--make-request "$ccls/memberHierarchy"
+   (lsp--make-request "$ccls/member"
                       `(
                         :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                         :position ,(lsp--cur-position)
                         :levels 1
-                        :qualified ,(if ccls-member-hierarchy-qualified t :json-false)))))
+                        :qualified ,(if ccls-member-hierarchy-qualified t :json-false)
+                        :hierarchy t
+                        ))))
 
 (defun ccls-member-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"

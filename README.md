@@ -8,7 +8,7 @@ It leverages [lsp-mode](https://github.com/emacs-lsp/lsp-mode), but also provide
 
 * semantic highlighting
 * skipped ranges (e.g. a `#if false` region)
-* cross references: `$ccls/base` `$ccls/callers` `$ccls/derived` `$ccls/vars`
+* cross references: `$ccls/inheritance` `$ccls/call` `$ccls/vars`
 
 More on <https://github.com/MaskRay/ccls/wiki/Emacs>
 
@@ -16,7 +16,7 @@ More on <https://github.com/MaskRay/ccls/wiki/Emacs>
 
 ```elisp
 (require 'ccls)
-(setq ccls-executable "/path/to/ccls/release/ccls")
+(setq ccls-executable "/path/to/ccls/Release/ccls")
 ```
 
 Refer to <https://github.com/MaskRay/ccls/wiki/Emacs> for details.
@@ -26,11 +26,16 @@ Refer to <https://github.com/MaskRay/ccls/wiki/Emacs> for details.
 ![with company-lsp](https://ptpb.pw/lDaw.jpg)
 ![with helm-xref, approximate workspace/symbol search](https://ptpb.pw/KOKn.jpg)
 
-`$ccls/memberHierarchy`
-![$ccls/memberHierarchy](https://ptpb.pw/iOSt.gif)
+`$ccls/member`
+![$ccls/member](https://ptpb.pw/iOSt.gif)
 
-`$ccls/callHierarchy` (caller hierarchy and callee hierarchy)
-![$ccls/callHierarchy](https://ptpb.pw/GKJw.gif)
+`$ccls/call` (caller/callee, with hierarchical view)
+
+### `ccls-navigate`
+
+https://github.com/MaskRay/ccls/wiki/Emacs#ccls-navigate
+
+![ccls-navigate](https://camo.githubusercontent.com/7d9c5e9ad1297fa493d1256f9bc9824f56806d23/68747470733a2f2f707470622e70772f4858744d2e676966)
 
 ## License
 

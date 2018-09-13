@@ -81,24 +81,26 @@
     (--map (ccls-call-hierarchy--read-node it node)
            (gethash "children"
                     (lsp--send-request
-                     (lsp--make-request "$ccls/callHierarchy"
+                     (lsp--make-request "$ccls/call"
                                         `(:id ,id
                                               :callee ,callee
                                               :callType 3
                                               :levels ,ccls-tree-initial-levels
                                               :qualified ,(if ccls-call-hierarchy-qualified t :json-false)
+                                              :hierarchy t
                                               )))))))
 
 (defun ccls-call-hierarchy--request-init (callee)
   "."
   (ccls--ccls-buffer-check)
   (lsp--send-request
-   (lsp--make-request "$ccls/callHierarchy"
+   (lsp--make-request "$ccls/call"
                       `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
                                       :position ,(lsp--cur-position)
                                       :callee ,callee
                                       :callType 3
                                       :qualified ,(if ccls-call-hierarchy-qualified t :json-false)
+                                      :hierarchy t
                                       ))))
 
 (defun ccls-call-hierarchy--make-string (node depth)
