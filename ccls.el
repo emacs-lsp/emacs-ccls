@@ -4,10 +4,10 @@
 ;; Copyright (C) 2018 Fangrui Song
 
 ;; Author: Tobias Pisani, Fangrui Song
-;; Package-Version: 20180914.1
+;; Package-Version: 20180925.1
 ;; Version: 0.1
 ;; Homepage: https://github.com/MaskRay/emacs-ccls
-;; Package-Requires: ((emacs "25.1") (lsp-mode "4.2") (dash "0.14"))
+;; Package-Requires: ((emacs "25.1") (lsp-mode "4.2") (dash "0.14") (projectile "1.0.0"))
 ;; Keywords: languages, lsp, c++
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
