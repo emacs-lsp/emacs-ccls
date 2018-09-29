@@ -59,7 +59,10 @@
 (defun ccls--make-code-lens-string (command)
   "."
   (let ((map (make-sparse-keymap)))
-    (define-key map [mouse-1] (lambda () (interactive) (ccls--execute-command (gethash "command" command) (gethash "arguments" command))))
+    (define-key map [mouse-1]
+      (lambda () (interactive)
+        (xref--show-xrefs (lsp--locations-to-xref-items
+                           (lsp--execute-command command)) nil)))
     (propertize (gethash "title" command)
                 'face 'ccls-code-lens-face
                 'mouse-face 'ccls-code-lens-mouse-face
@@ -69,23 +72,12 @@
   "."
   (overlay-recenter (point-max))
   (ccls-clear-code-lens)
-  (let (buffers)
-    (seq-do (lens result)
-      (let* ((range (ccls--read-range (gethash "range" lens)))
-             (root (gethash "command" lens))
-             ;; (title (gethash "title" root))
-             ;; (command (gethash "command" root))
-             (buffer (find-buffer-visiting (lsp--uri-to-path (gethash "uri" (gethash "arguments" root))))))
-        (when buffer
-          (with-current-buffer buffer
-            (save-excursion
-              (when (not (member buffer buffers))
-                (ccls-clear-code-lens)
-                (overlay-recenter (point-max))
-                (setq buffers (cons buffer buffers)))
-              (let ((ov (make-overlay (car range) (cdr range) buffer)))
-                (overlay-put ov 'ccls-code-lens t)
-                (overlay-put ov 'after-string (format " %s" (ccls--make-code-lens-string root)))))))))))
+  (seq-doseq (lens result)
+    (let* ((range (ccls--read-range (gethash "range" lens)))
+           (root (gethash "command" lens)))
+      (let ((ov (make-overlay (cdr range) (cdr range))))
+        (overlay-put ov 'ccls-code-lens t)
+        (overlay-put ov 'after-string (format " %s" (ccls--make-code-lens-string root)))))))
 
 (defun ccls-request-code-lens ()
   "Request code lens from ccls."

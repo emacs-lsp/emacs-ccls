@@ -103,20 +103,19 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
 ;;   Commands
 ;; ---------------------------------------------------------------------
 
-(defun ccls--execute-command (command &optional arguments)
+(defun ccls--execute-command (command arguments)
   "Execute a ccls command."
-  (let ((uri (gethash "uri" arguments)))
-    (save-current-buffer
-      (find-file (lsp--uri-to-path uri))
-      (pcase command
-        ;; Code actions
-        ('"ccls._applyFixIt"
-         (seq-doseq (edit data)
-           (ccls--apply-textedit edit)))
-        ('"ccls.showReferences" ;; Used by code lenses
-         (xref--show-xrefs (lsp--locations-to-xref-items (gethash "locations" arguments)) nil))
-        (_
-         (message "unknown command: %s" command))))))
+  (pcase command
+    ;; Code actions
+    ('"ccls._applyFixIt"
+     (find-file (lsp--uri-to-path (gethash "uri" args)))
+     (seq-doseq (edit data)
+       (ccls--apply-textedit edit)))
+    ('"ccls.xref" ;; Used by code lenses
+     (xref--show-xrefs (lsp--locations-to-xref-items
+                        (lsp--send-request (lsp--make-request "workspace/executeCommand") command arguments)) nil))
+    (_
+     (message "unknown command: %s" command))))
 
 (defun ccls--apply-textedit (edit)
   (let* ((range (gethash "range" edit))
@@ -126,13 +125,5 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
     (delete-region start end)
     (goto-char start)
     (insert newText)))
-
-(defun ccls--execute-command-locally-advice (orig-func command args)
-  "ccls currently doesn't support `workspace/executeCommand', so execute those locally."
-  (if (ccls--is-ccls-buffer)
-      (ccls--execute-command command args)
-    (funcall orig-func args)))
-
-(advice-add 'lsp--send-execute-command :around #'ccls--execute-command-locally-advice)
 
 (provide 'ccls-common)
