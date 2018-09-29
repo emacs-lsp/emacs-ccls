@@ -30,6 +30,11 @@
   :group 'tools
   :group 'ccls)
 
+(defcustom ccls-code-lens-position 'end
+  "The position to put code lens overlays."
+  :type '(choice (const end) (const inplace))
+  :group 'ccls-code-lens)
+
 (defface ccls-code-lens-face
   '((t :inherit shadow))
   "The face used for code lens overlays."
@@ -56,14 +61,15 @@
 ;;   - Add a global option to request code lenses on automatically
 ;; ---------------------------------------------------------------------
 
-(defun ccls--make-code-lens-string (command)
+(defun ccls--make-code-lens-string (pad command)
   "."
   (let ((map (make-sparse-keymap)))
     (define-key map [mouse-1]
       (lambda () (interactive)
-        (xref--show-xrefs (lsp--locations-to-xref-items
-                           (lsp--execute-command command)) nil)))
-    (propertize (gethash "title" command)
+        (when-let ((xrefs (lsp--locations-to-xref-items
+                           (lsp--execute-command command))))
+          (xref--show-xrefs xrefs nil))))
+    (propertize (concat pad (gethash "title" command))
                 'face 'ccls-code-lens-face
                 'mouse-face 'ccls-code-lens-mouse-face
                 'local-map map)))
@@ -72,12 +78,40 @@
   "."
   (overlay-recenter (point-max))
   (ccls-clear-code-lens)
-  (seq-doseq (lens result)
-    (let* ((range (ccls--read-range (gethash "range" lens)))
-           (root (gethash "command" lens)))
-      (let ((ov (make-overlay (cdr range) (cdr range))))
-        (overlay-put ov 'ccls-code-lens t)
-        (overlay-put ov 'after-string (format " %s" (ccls--make-code-lens-string root)))))))
+  (setq
+   result
+   (seq-sort
+    (lambda (x y)
+      (let ((xl (aref x 2)) (yl (aref y 2)))
+        (if (/= xl yl) (< xl yl) (< (aref x 3) (aref y 3)))))
+    (seq-map (lambda (lens)
+               (-let* (((&hash "command" command "range" range) lens)
+                       ((&hash "start" start "end" end) range))
+                 (vector (gethash "line" start) (gethash "character" start)
+                         (gethash "line" end) (gethash "character" end) command)
+                 )) result)))
+  (save-excursion
+    (widen)
+    (goto-char 1)
+    (let ((line 0) (col 0) (notfirst nil))
+      (seq-doseq (lens result)
+        (-let (([l0 c0 l1 c1 command] lens) (pad " "))
+          (let ((ov (pcase ccls-code-lens-position
+                      ('end
+                       (forward-line (- l0 line))
+                       (when (and (= l0 line) (/= c1 col) notfirst)
+                         (setq pad "|"))
+                       (setq line l0)
+                       (let ((p (line-end-position)))
+                         (make-overlay p p)))
+                      ('inplace
+                       (forward-line (- l1 line))
+                       (forward-char c1)
+                       (setq line l1)
+                       (make-overlay (point) (point))))))
+            (overlay-put ov 'ccls-code-lens t)
+            (overlay-put ov 'after-string (ccls--make-code-lens-string pad command)))
+          (setq col c1 notfirst t))))))
 
 (defun ccls-request-code-lens ()
   "Request code lens from ccls."
@@ -91,9 +125,7 @@
 (defun ccls-clear-code-lens ()
   "Clear all code lenses from this buffer."
   (interactive)
-  (dolist (ov (overlays-in (point-min) (point-max)))
-    (when (overlay-get ov 'ccls-code-lens)
-      (delete-overlay ov))))
+  (remove-overlays nil nil 'ccls-code-lens t))
 
 (defun ccls-code-lens--request-when-idle ()
   (run-with-idle-timer 0.5 nil 'ccls-request-code-lens))
@@ -104,12 +136,13 @@
   :global nil
   :init-value nil
   :lighter "Lens"
-  (pcase ccls-code-lens-mode
-    ('t
-     (ccls-request-code-lens)
-     (add-hook 'lsp-after-diagnostics-hook 'ccls-code-lens--request-when-idle t t))
-    ('nil
-     (remove-hook 'lsp-after-diagnostics-hook 'ccls-code-lens--request-when-idle t)
-     (ccls-clear-code-lens))))
+  (cond
+   (ccls-code-lens-mode
+    (when (ccls--is-ccls-buffer)
+      (ccls-request-code-lens)
+      (add-hook 'lsp-after-diagnostics-hook 'ccls-code-lens--request-when-idle t t)))
+   (t
+    (remove-hook 'lsp-after-diagnostics-hook 'ccls-code-lens--request-when-idle t)
+    (ccls-clear-code-lens))))
 
 (provide 'ccls-code-lens)
