@@ -70,7 +70,7 @@
   (overlay-recenter (point-max))
   (ccls-clear-code-lens)
   (let (buffers)
-    (dolist (lens result)
+    (seq-do (lens result)
       (let* ((range (ccls--read-range (gethash "range" lens)))
              (root (gethash "command" lens))
              ;; (title (gethash "title" root))

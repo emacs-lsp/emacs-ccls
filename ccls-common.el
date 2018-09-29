@@ -105,8 +105,7 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
 
 (defun ccls--execute-command (command &optional arguments)
   "Execute a ccls command."
-  (let* ((uri (seq-elt arguments 0))
-         (data (seq-elt arguments 1)))
+  (let ((uri (gethash "uri" arguments)))
     (save-current-buffer
       (find-file (lsp--uri-to-path uri))
       (pcase command
@@ -115,7 +114,7 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
          (seq-doseq (edit data)
            (ccls--apply-textedit edit)))
         ('"ccls.showReferences" ;; Used by code lenses
-         (xref--show-xrefs (lsp--locations-to-xref-items (cadr data)) nil))
+         (xref--show-xrefs (lsp--locations-to-xref-items (gethash "locations" arguments)) nil))
         (_
          (message "unknown command: %s" command))))))
 
