@@ -61,7 +61,7 @@
 ;;   - Add a global option to request code lenses on automatically
 ;; ---------------------------------------------------------------------
 
-(defun ccls--make-code-lens-string (pad command)
+(defun ccls--make-code-lens-string (lpad command &optional rpad)
   "."
   (let ((map (make-sparse-keymap)))
     (define-key map [mouse-1]
@@ -69,7 +69,7 @@
         (when-let ((xrefs (lsp--locations-to-xref-items
                            (lsp--execute-command command))))
           (xref--show-xrefs xrefs nil))))
-    (propertize (concat pad (gethash "title" command))
+    (propertize (concat lpad (gethash "title" command) rpad)
                 'face 'ccls-code-lens-face
                 'mouse-face 'ccls-code-lens-mouse-face
                 'local-map map)))
@@ -93,25 +93,33 @@
   (save-excursion
     (widen)
     (goto-char 1)
-    (let ((line 0) (col 0) (notfirst nil))
+    (let ((line 0) (col 0) ov)
       (seq-doseq (lens result)
         (-let (([l0 c0 l1 c1 command] lens) (pad " "))
-          (let ((ov (pcase ccls-code-lens-position
-                      ('end
-                       (forward-line (- l0 line))
-                       (when (and (= l0 line) (/= c1 col) notfirst)
-                         (setq pad "|"))
-                       (setq line l0)
-                       (let ((p (line-end-position)))
-                         (make-overlay p p)))
-                      ('inplace
-                       (forward-line (- l1 line))
-                       (forward-char c1)
-                       (setq line l1)
-                       (make-overlay (point) (point))))))
-            (overlay-put ov 'ccls-code-lens t)
-            (overlay-put ov 'after-string (ccls--make-code-lens-string pad command)))
-          (setq col c1 notfirst t))))))
+          (pcase ccls-code-lens-position
+            ('end
+             (forward-line (- l0 line))
+             (if (and ov (= l0 line))
+                 (overlay-put ov 'display
+                              (concat (overlay-get ov 'display)
+                                      (ccls--make-code-lens-string (if (/= c0 col) "|" " ") command)))
+               (when ov
+                 (overlay-put ov 'display (concat (overlay-get ov 'display) "\n")))
+               (let ((p (point-at-eol)))
+                 (setq ov (make-overlay p (1+ p) nil 'front-advance))
+                 (overlay-put ov 'ccls-code-lens t)
+                 (overlay-put ov 'display (ccls--make-code-lens-string " " command))))
+             (setq line l0 col c0))
+            ('inplace
+             (forward-line (- l1 line))
+             (forward-char c1)
+             (setq line l1)
+             (setq ov (make-overlay (point) (point)))
+             (overlay-put ov 'ccls-code-lens t)
+             (overlay-put ov 'after-string (ccls--make-code-lens-string " " command)))))
+        )
+      (when (and (eq ccls-code-lens-position 'end) ov)
+        (overlay-put ov 'display (concat (overlay-get ov 'display) "\n"))))))
 
 (defun ccls-request-code-lens ()
   "Request code lens from ccls."
