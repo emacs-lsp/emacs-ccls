@@ -98,6 +98,11 @@ root location or `nil' if subsequent matchers should be used instead.
 ;; ---------------------------------------------------------------------
 ;;   Other ccls-specific methods
 ;; ---------------------------------------------------------------------
+;;
+(defun ccls-info ()
+  (lsp--cur-workspace-check)
+  (lsp--send-request
+   (lsp--make-request "$ccls/info")))
 
 (defun ccls-file-info ()
   (lsp--cur-workspace-check)

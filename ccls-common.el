@@ -93,8 +93,7 @@
 ;;   Notification handlers
 ;; ---------------------------------------------------------------------
 
-(defvar ccls--handlers
-  '(("$ccls/progress" . (lambda (_w _p))))
+(defvar ccls--handlers nil
   "List of cons-cells of (METHOD . HANDLER) pairs, where METHOD is the lsp method to handle,
 and handler is a function invoked as (handler WORKSPACE PARAMS), where WORKSPACE is the current
 lsp-workspace, and PARAMS is a hashmap of the params recieved with the notification.")
@@ -107,10 +106,6 @@ lsp-workspace, and PARAMS is a hashmap of the params recieved with the notificat
   "Execute a ccls command."
   (pcase command
     ;; Code actions
-    ('"ccls._applyFixIt"
-     (find-file (lsp--uri-to-path (gethash "uri" args)))
-     (seq-doseq (edit data)
-       (ccls--apply-textedit edit)))
     ('"ccls.xref" ;; Used by code lenses
      (xref--show-xrefs (lsp--locations-to-xref-items
                         (lsp--send-request (lsp--make-request "workspace/executeCommand") command arguments)) nil))
