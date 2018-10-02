@@ -121,14 +121,17 @@
       (when (and (eq ccls-code-lens-position 'end) ov)
         (overlay-put ov 'display (concat (overlay-get ov 'display) "\n"))))))
 
-(defun ccls-request-code-lens ()
+(defun ccls-request-code-lens (&optional buffer)
   "Request code lens from ccls."
   (interactive)
+  (setq buffer (or buffer (current-buffer)))
   (lsp--cur-workspace-check)
   (lsp--send-request-async
    (lsp--make-request "textDocument/codeLens"
                       `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))))
-   #'ccls--code-lens-callback))
+   (lambda (result)
+     (with-current-buffer buffer
+       (ccls--code-lens-callback result)))))
 
 (defun ccls-clear-code-lens ()
   "Clear all code lenses from this buffer."
@@ -136,7 +139,7 @@
   (remove-overlays nil nil 'ccls-code-lens t))
 
 (defun ccls-code-lens--request-when-idle ()
-  (run-with-idle-timer 0.5 nil 'ccls-request-code-lens))
+  (run-with-idle-timer 0.5 nil #'ccls-request-code-lens (current-buffer)))
 
 (define-minor-mode ccls-code-lens-mode
   "toggle code-lens overlays"
