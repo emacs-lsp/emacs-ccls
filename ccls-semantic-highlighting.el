@@ -214,8 +214,7 @@ If nil, disable semantic highlighting."
       ((or 5 23) (funcall fn0 ccls-sem-type-faces 0 800)) ; Struct, Class
       (10 (funcall fn0 ccls-sem-type-faces 800 1000)) ; Enum
       (26 (funcall fn0 ccls-sem-type-faces 0 1000)) ; TypeParameter
-      (252 `(,(funcall fn0 ccls-sem-type-faces 0 1000)
-            ccls-sem-member-face)) ; TypeAlias
+      (252 `(,(funcall fn0 ccls-sem-type-faces 0 1000))) ; TypeAlias
 
       ;; Variables
       (13 `(,(funcall fn0 ccls-sem-variable-faces 0 1000)
