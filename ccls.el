@@ -38,7 +38,7 @@
 ;;; Code:
 
 (require 'ccls-common)
-(require 'ccls-semantic-highlighting)
+(require 'ccls-semantic-highlight)
 (require 'ccls-code-lens)
 (require 'ccls-tree)
 (require 'ccls-call-hierarchy)

@@ -30,7 +30,7 @@
 ;; ---------------------------------------------------------------------
 
 (defgroup ccls-sem nil
-  "ccls semantic highlighting."
+  "ccls semantic highlight."
   :group 'tools
   :group 'ccls)
 
@@ -40,7 +40,7 @@
   :group 'ccls-sem)
 
 (defvar ccls-sem-face-function 'ccls-sem--default-face
-  "Function used to determine the face of a symbol in semantic highlighting.")
+  "Function used to determine the face of a symbol in semantic highlight.")
 
 (defface ccls-sem-global-variable-face
   '((t :weight extra-bold))
@@ -158,9 +158,9 @@ Regions that are disabled by preprocessors will be displayed in shadow."
 
 (defcustom ccls-sem-highlight-method
   nil
-  "The method used to draw semantic highlighting.
+  "The method used to draw semantic highlight.
 overlays are more accurate than font-lock, but slower.
-If nil, disable semantic highlighting."
+If nil, disable semantic highlight."
   :group 'ccls-sem
   :type '(radio
           (const nil)
@@ -168,11 +168,11 @@ If nil, disable semantic highlighting."
           (const :tag "font-lock" font-lock)))
 
 ;; ---------------------------------------------------------------------
-;;   Semantic highlighting
+;;   Semantic highlight
 ;; ---------------------------------------------------------------------
 
 (defvar-local ccls--inactive-overlays nil "Inactive overlays.")
-(defvar-local ccls--sem-overlays nil "Semantic highlighting overlays.")
+(defvar-local ccls--sem-overlays nil "Semantic highlight overlays.")
 
 (defun ccls--clear-sem-highlights ()
   "."
@@ -184,17 +184,17 @@ If nil, disable semantic highlighting."
      (font-lock-ensure))))
 
 (defun ccls-sem--default-face (symbol)
-  "Get semantic highlighting face of SYMBOL."
+  "Get semantic highlight face of SYMBOL."
   ;; https://github.com/ccls-project/ccls/blob/master/src/symbol.h
   (-let* (((&hash "type" type "kind" kind "storage" storage
-                  "parentKind" parent-kind "stableId" stable-id) symbol)
+                  "parentKind" parent-kind "id" id) symbol)
          (fn0 (lambda (faces lo0 hi0)
                 (let* ((n (length faces))
                        (lo (/ (* lo0 n) 1000))
                        (hi (/ (* hi0 n) 1000))
-                       (idx (max 0 (if (= lo hi) (1- hi) (+ lo (% stable-id (- hi lo)))))))
+                       (idx (max 0 (if (= lo hi) (1- hi) (+ lo (% id (- hi lo)))))))
                   (elt faces idx))))
-         (fn (lambda (faces) (elt faces (% stable-id (length faces))))))
+         (fn (lambda (faces) (elt faces (% id (length faces))))))
     ;; ccls/src/indexer.h ClangSymbolKind
     ;; clang/Index/IndexSymbol.h clang::index::SymbolKind
     (pcase kind
@@ -237,8 +237,8 @@ If nil, disable semantic highlighting."
            (1 (funcall fn ccls-sem-function-faces))
            (_ (funcall fn ccls-sem-variable-faces)))))))
 
-(defun ccls--publish-semantic-highlighting (_workspace params)
-  "Publish semantic highlighting information according to PARAMS."
+(defun ccls--publish-semantic-highlight (_workspace params)
+  "Publish semantic highlight information according to PARAMS."
   (when ccls-sem-highlight-method
     (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
                  (buffer (find-buffer-visiting file))
@@ -267,7 +267,7 @@ If nil, disable semantic highlighting."
                    (push ov ccls--sem-overlays)))))))))))
 
 (defmacro ccls-use-default-rainbow-sem-highlight ()
-  "Use default rainbow semantic highlighting theme."
+  "Use default rainbow semantic highlight theme."
   (require 'dash)
   `(progn
      ,@(cl-loop
@@ -285,11 +285,11 @@ If nil, disable semantic highlighting."
                                    (intern (format "ccls-sem-%s-face-%S" ,kind i)))))))))))
 
 ;; Add handler
-(push '("$ccls/publishSemanticHighlighting" . (lambda (w p) (ccls--publish-semantic-highlighting w p)))
+(push '("$ccls/publishSemanticHighlight" . (lambda (w p) (ccls--publish-semantic-highlight w p)))
       ccls--handlers)
 
 ;; ---------------------------------------------------------------------
-;;   Inactive regions
+;;   Skipped ranges
 ;; ---------------------------------------------------------------------
 
 (defun ccls--clear-skipped-ranges ()
@@ -297,7 +297,7 @@ If nil, disable semantic highlighting."
   (while ccls--inactive-overlays
     (delete-overlay (pop ccls--inactive-overlays))))
 
-(defun ccls--set-skipped-ranges (_workspace params)
+(defun ccls--publish-skipped-ranges (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
   (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
                (regions (mapcar 'ccls--read-range (gethash "skippedRanges" params)))
@@ -314,7 +314,7 @@ If nil, disable semantic highlighting."
                (push ov ccls--inactive-overlays))))))))
 
 ;; Add handler
-(push '("$ccls/setSkippedRanges" . (lambda (w p) (ccls--set-skipped-ranges w p)))
+(push '("$ccls/publishSkippedRanges" . (lambda (w p) (ccls--publish-skipped-ranges w p)))
       ccls--handlers)
 
-(provide 'ccls-semantic-highlighting)
+(provide 'ccls-semantic-highlight)
