@@ -80,7 +80,6 @@
 
 (defun ccls-inheritance-hierarchy--request-init (derived)
   "."
-  (ccls--ccls-buffer-check)
   (lsp--send-request
    (lsp--make-request "$ccls/inheritance"
                       `(
@@ -103,7 +102,6 @@
 
 (defun ccls-inheritance-hierarchy (derived)
   (interactive "P")
-  (ccls--ccls-buffer-check)
   (let ((json-derived (if derived t :json-false)))
     (ccls-tree--open
      (make-ccls-tree-client

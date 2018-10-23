@@ -46,31 +46,10 @@
   (cons (lsp--position-to-point (gethash "start" range))
         (lsp--position-to-point (gethash "end" range))))
 
-(defsubst ccls--root-from-file (file)
-  (-when-let (match (locate-dominating-file default-directory file))
-    (expand-file-name match)))
-
-(defsubst ccls--root-from-func (func)
-  (and (fboundp func) (ignore-errors (funcall func))))
-
 (cl-defun ccls--get-root ()
   "Return the root directory of a ccls project."
-  (cl-loop for matcher in ccls-project-root-matchers do
-           (-when-let (root (cl-typecase matcher
-                              (string (ccls--root-from-file matcher))
-                              (function  (ccls--root-from-func matcher))))
-             (cl-return-from ccls--get-root root)))
-  (user-error "Could not find ccls project root"))
-
-(defun ccls--is-ccls-buffer (&optional buffer)
-  "Return non-nil if current buffer is using the ccls client"
-  (with-current-buffer (or buffer (current-buffer))
-    (and lsp--cur-workspace
-         (eq (lsp--client-get-root (lsp--workspace-client lsp--cur-workspace)) 'ccls--get-root))))
-
-(define-inline ccls--ccls-buffer-check ()
-  (inline-quote (cl-assert (ccls--is-ccls-buffer) nil
-                           "ccls is not enabled in this buffer.")))
+  (-when-let (match (locate-dominating-file default-directory ".ccls-root"))
+    (expand-file-name match)))
 
 (defun ccls--get-renderer ()
   (thread-last lsp--cur-workspace
@@ -98,27 +77,5 @@
 and handler is a function invoked as (handler WORKSPACE PARAMS), where WORKSPACE is the current
 lsp-workspace, and PARAMS is a hashmap of the params recieved with the notification.")
 
-;; ---------------------------------------------------------------------
-;;   Commands
-;; ---------------------------------------------------------------------
-
-(defun ccls--execute-command (command arguments)
-  "Execute a ccls command."
-  (pcase command
-    ;; Code actions
-    ('"ccls.xref" ;; Used by code lenses
-     (xref--show-xrefs (lsp--locations-to-xref-items
-                        (lsp--send-request (lsp--make-request "workspace/executeCommand") command arguments)) nil))
-    (_
-     (message "unknown command: %s" command))))
-
-(defun ccls--apply-textedit (edit)
-  (let* ((range (gethash "range" edit))
-         (start (lsp--position-to-point (gethash "start" range)))
-         (end (lsp--position-to-point (gethash "end" range)))
-         (newText (gethash "newText" edit)))
-    (delete-region start end)
-    (goto-char start)
-    (insert newText)))
 
 (provide 'ccls-common)

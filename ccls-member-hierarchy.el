@@ -77,7 +77,6 @@
 
 (defun ccls-member-hierarchy--request-init ()
   "."
-  (ccls--ccls-buffer-check)
   (lsp--send-request
    (lsp--make-request "$ccls/member"
                       `(
@@ -97,7 +96,6 @@
 
 (defun ccls-member-hierarchy ()
   (interactive)
-  (ccls--ccls-buffer-check)
   (ccls-tree--open
    (make-ccls-tree-client
     :name "member hierarchy"

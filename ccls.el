@@ -63,8 +63,6 @@
   :type '(repeat string)
   :group 'ccls)
 
-(defalias 'ccls-additional-arguments 'ccls-extra-args)
-
 (defcustom ccls-cache-dir
   ".ccls-cache/"
   "Directory in which ccls will store its index cache.
@@ -76,23 +74,6 @@ Relative to the project root directory."
   nil
   "Additional initializationOptions passed to ccls."
   :type '(repeat string)
-  :group 'ccls)
-
-(defcustom ccls-project-root-matchers
-  '(".ccls-root" projectile-project-root)
-  "List of matchers that are used to locate the ccls project roots.
-Each matcher is run in order, and the first successful (non-nil) matcher
-determines the project root.
-
-A `string' entry defines a dominating file that exists in either the
-current working directory or a parent directory. ccls will traverse
-upwards through the project directory structure and return the first
-matching file.
-
-A `function' entry define a callable function that either returns workspace's
-root location or `nil' if subsequent matchers should be used instead.
-"
-  :type '(repeat (choice (file) (function)))
   :group 'ccls)
 
 ;; ---------------------------------------------------------------------

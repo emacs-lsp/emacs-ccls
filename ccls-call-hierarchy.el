@@ -92,7 +92,6 @@
 
 (defun ccls-call-hierarchy--request-init (callee)
   "."
-  (ccls--ccls-buffer-check)
   (lsp--send-request
    (lsp--make-request "$ccls/call"
                       `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
@@ -121,7 +120,6 @@
 
 (defun ccls-call-hierarchy (callee)
   (interactive "P")
-  (ccls--ccls-buffer-check)
   (setq callee (if callee t :json-false))
   (ccls-tree--open
    (make-ccls-tree-client

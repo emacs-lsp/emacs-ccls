@@ -149,7 +149,7 @@
   :lighter "Lens"
   (cond
    (ccls-code-lens-mode
-    (when (ccls--is-ccls-buffer)
+    (when lsp--cur-workspace
       (ccls-request-code-lens)
       (add-hook 'lsp-after-diagnostics-hook 'ccls-code-lens--request-when-idle t t)))
    (t
