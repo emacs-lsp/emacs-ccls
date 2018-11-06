@@ -124,14 +124,12 @@
 (defun ccls-request-code-lens (&optional buffer)
   "Request code lens from ccls."
   (interactive)
-  (setq buffer (or buffer (current-buffer)))
-  (lsp--cur-workspace-check)
-  (lsp--send-request-async
-   (lsp--make-request "textDocument/codeLens"
-                      `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))))
-   (lambda (result)
-     (with-current-buffer buffer
-       (ccls--code-lens-callback result)))))
+  (with-current-buffer (or buffer (current-buffer))
+    (lsp--cur-workspace-check)
+    (lsp--send-request-async
+     (lsp--make-request "textDocument/codeLens"
+                        `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))))
+     #'ccls--code-lens-callback)))
 
 (defun ccls-clear-code-lens ()
   "Clear all code lenses from this buffer."
