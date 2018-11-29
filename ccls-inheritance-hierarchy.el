@@ -98,7 +98,7 @@
          (name (ccls-inheritance-hierarchy-node-name data)))
     (if (string-equal name "[[Base]]")
         (propertize "Bases" 'face 'ccls-inheritance-hierarchy-base-face)
-      (ccls--render-type name))))
+      name)))
 
 (defun ccls-inheritance-hierarchy (derived)
   (interactive "P")

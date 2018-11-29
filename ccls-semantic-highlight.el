@@ -284,13 +284,13 @@ If nil, disable semantic highlight."
                           (cl-loop for i below (length ,colors) collect
                                    (intern (format "ccls-sem-%s-face-%S" ,kind i)))))))))))
 
-;; Add handler
-(push '("$ccls/publishSemanticHighlight" . (lambda (w p) (ccls--publish-semantic-highlight w p)))
-      ccls--handlers)
-
 ;; ---------------------------------------------------------------------
 ;;   Skipped ranges
 ;; ---------------------------------------------------------------------
+
+(defun ccls--read-range (range)
+  (cons (lsp--position-to-point (gethash "start" range))
+        (lsp--position-to-point (gethash "end" range))))
 
 (defun ccls--clear-skipped-ranges ()
   "Clean up overlays."
@@ -312,9 +312,5 @@ If nil, disable semantic highlight."
                (overlay-put ov 'face 'ccls-skipped-range-face)
                (overlay-put ov 'ccls-inactive t)
                (push ov ccls--inactive-overlays))))))))
-
-;; Add handler
-(push '("$ccls/publishSkippedRanges" . (lambda (w p) (ccls--publish-skipped-ranges w p)))
-      ccls--handlers)
 
 (provide 'ccls-semantic-highlight)

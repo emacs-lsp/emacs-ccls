@@ -90,9 +90,9 @@
 (defun ccls-member-hierarchy--make-string (node depth)
   "Propertize the name of NODE with the correct properties"
   (let ((data (ccls-tree-node-data node)))
-    (ccls--render-string (if (eq depth 0)
-                               (ccls-member-hierarchy-node-name data)
-                             (ccls-member-hierarchy-node-field-name data)))))
+    (if (= depth 0)
+        (ccls-member-hierarchy-node-name data)
+      (ccls-member-hierarchy-node-field-name data))))
 
 (defun ccls-member-hierarchy ()
   (interactive)

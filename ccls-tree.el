@@ -184,13 +184,13 @@
 (defun ccls-tree--open (client)
   "."
   (let ((opoint (point))
-        (lsp-ws lsp--cur-workspace)
+        (lsp-ws lsp--buffer-workspaces)
         (root-node-data (ccls-tree--request-init client))
         (orig-buf (current-buffer))
         (bufname (format "*ccls-tree %s*" (ccls-tree-client-name client))))
     (with-current-buffer (get-buffer-create bufname)
       (ccls-tree-mode)
-      (setq lsp--cur-workspace lsp-ws
+      (setq lsp--buffer-workspaces lsp-ws
             ccls-tree--cur-client client
             ccls-tree--origin-buffer orig-buf
             ccls-tree--origin-win (get-buffer-window orig-buf)
@@ -262,7 +262,7 @@
 (defun ccls-tree-press (&optional split-fn)
   "Jump to the location."
   (interactive)
-  (-when-let* ((workspace lsp--cur-workspace)
+  (-when-let* ((workspaces lsp--buffer-workspaces)
                (node (ccls-tree--node-at-point))
                (unused (window-live-p ccls-tree--origin-win)))
     (with-selected-window ccls-tree--origin-win
@@ -270,11 +270,11 @@
         (funcall split-fn))
       (find-file (car (ccls-tree-node-location node)))
       ;; TODO Extract lsp-ui-peek.el lsp-ui-peek--goto-xref
-      (unless lsp--cur-workspace
-        (setq lsp--cur-workspace workspace))
-      (unless lsp-mode
+      (unless lsp--buffer-workspaces
+        (setq lsp--buffer-workspaces workspaces)
         (lsp-mode 1)
-        (lsp-on-open))
+        (dolist (workspace cur-buffer-workspaces)
+          (lsp--open-in-workspace workspace)))
       (goto-char (lsp--position-to-point (cdr (ccls-tree-node-location node))))
       (recenter)
       (run-hooks 'xref-after-jump-hook))))
