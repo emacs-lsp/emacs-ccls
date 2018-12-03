@@ -73,15 +73,11 @@
 ;; ---------------------------------------------------------------------
 ;;
 (defun ccls-info ()
-  (lsp--cur-workspace-check)
-  (lsp--send-request
-   (lsp--make-request "$ccls/info")))
+  (lsp-request "$ccls/info" (make-hash-table)))
 
 (defun ccls-file-info ()
-  (lsp--cur-workspace-check)
-  (lsp--send-request
-   (lsp--make-request "$ccls/fileInfo"
-                      `(:textDocument ,(lsp--text-document-identifier)))))
+  (lsp-request "$ccls/fileInfo"
+               `(:textDocument ,(lsp--text-document-identifier))))
 
 (defun ccls-preprocess-file (&optional output-buffer)
   "Preprocess selected buffer."
@@ -116,10 +112,7 @@
 (defun ccls-reload ()
   "Reset database and reload cached index files."
   (interactive)
-  (lsp--cur-workspace-check)
-  (lsp--send-notification
-   (lsp--make-notification "$ccls/reload" (list :whitelist []
-                                                :blacklist []))))
+  (lsp-notify "$ccls/reload" (list :whitelist [] :blacklist [])))
 
 (defun ccls-navigate (direction)
   "Navigate to a nearby outline symbol.

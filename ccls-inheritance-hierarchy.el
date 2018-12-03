@@ -69,28 +69,26 @@
         (kind (ccls-inheritance-hierarchy-node-kind (ccls-tree-node-data node))))
     (--map (ccls-inheritance-hierarchy--read-node it node)
            (gethash "children"
-                    (lsp--send-request
-                     (lsp--make-request "$ccls/inheritance"
-                                        `(:id ,id :kind ,kind
-                                              :derived ,derived
-                                              :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
-                                              :levels ,ccls-tree-initial-levels
-                                              :hierarchy t
-                                              )))))))
+                    (lsp-request
+                     "$ccls/inheritance"
+                     `(:id ,id :kind ,kind
+                           :derived ,derived
+                           :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
+                           :levels ,ccls-tree-initial-levels
+                           :hierarchy t
+                           ))))))
 
 (defun ccls-inheritance-hierarchy--request-init (derived)
   "."
-  (lsp--send-request
-   (lsp--make-request "$ccls/inheritance"
-                      `(
-                        :textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
-                        :position ,(lsp--cur-position)
+  (lsp-request
+   "$ccls/inheritance"
+   `(:textDocument (:uri ,(concat lsp--uri-file-prefix buffer-file-name))
+     :position ,(lsp--cur-position)
 
-                        :derived ,derived
-                        :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
-                        :levels 1
-                        :hierarchy t
-                        ))))
+     :derived ,derived
+     :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
+     :levels 1
+     :hierarchy t)))
 
 (defun ccls-inheritance-hierarchy--make-string (node _depth)
   "Propertize the name of NODE with the correct properties"
