@@ -10,7 +10,7 @@ It leverages [lsp-mode](https://github.com/emacs-lsp/lsp-mode), but also provide
 * skipped ranges (e.g. a `#if false` region)
 * cross references: `$ccls/inheritance` `$ccls/call` `$ccls/vars`
 
-More on <https://github.com/MaskRay/ccls/wiki/Emacs>
+More on <https://github.com/MaskRay/ccls/wiki/lsp-mode>
 
 ## Quickstart
 
