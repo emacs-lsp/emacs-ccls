@@ -68,6 +68,16 @@
   "initializationOptions"
   :group 'ccls)
 
+(defcustom ccls-get-initialization-options-function
+  #'ccls-get-initialization-options
+  "Function to get initialization options"
+  :type 'function
+  :group 'ccls)
+
+; The default function simply returns ccls-initialization-options
+(defun ccls-get-initialization-options ()
+  ccls-initialization-options)
+
 ;; ---------------------------------------------------------------------
 ;;   Other ccls-specific methods
 ;; ---------------------------------------------------------------------
@@ -138,7 +148,7 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   :notification-handlers
   (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
           ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-  :initialization-options (lambda () ccls-initialization-options)
+  :initialization-options ccls-get-initialization-options-function
   :library-folders-fn nil))
 
 (provide 'ccls)
