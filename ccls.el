@@ -125,7 +125,8 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
 
 (defun ccls--suggest-project-root ()
   (and (memq major-mode '(c-mode c++-mode cuda-mode objc-mode))
-       (locate-dominating-file default-directory ".ccls-root")))
+       (when-let (dir (locate-dominating-file default-directory ".ccls-root"))
+         (expand-file-name dir))))
 
 (advice-add 'lsp--suggest-project-root :before-until #'ccls--suggest-project-root)
 
