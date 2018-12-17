@@ -130,6 +130,12 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
 
 (advice-add 'lsp--suggest-project-root :before-until #'ccls--suggest-project-root)
 
+
+(defun ccls--get-initialization-options ()
+  "Simple function to return initializationOptions for ccls.
+User can rewrite this function to provide some project-specific options."
+  ccls-initialization-options)
+
 (lsp-register-client
  (make-lsp-client
   :new-connection (lsp-stdio-connection (lambda () (cons ccls-executable ccls-args)))
@@ -139,7 +145,7 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   :notification-handlers
   (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
           ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-  :initialization-options (lambda () ccls-initialization-options)
+  :initialization-options (lambda () (ccls--get-initialization-options))
   :library-folders-fn nil))
 
 (provide 'ccls)
