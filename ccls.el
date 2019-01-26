@@ -49,6 +49,23 @@
 ;;   Customization
 ;; ---------------------------------------------------------------------
 
+(defcustom ccls-process-wrapper-function
+  #'identity
+  "Use this to wrap the ccls process.
+For example, use the following the start the ccls process in a nix-shell:
+(lambda (argv)
+  (append
+   (append (list \"nix-shell\" \"-I\" \".\" \"--command\")
+           (list (mapconcat 'identity argv \" \"))
+           )
+   (list (concat (lsp--suggest-project-root) \"/shell.nix\"))
+   )
+  )"
+  :type '(choice
+	  (function-item :tag "None" :value identity)
+	  (function :tag "Custom function"))
+  :group 'ccls)
+
 (defcustom ccls-executable
   "ccls"
   "Path of the ccls executable."
@@ -120,6 +137,8 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
 ;; ---------------------------------------------------------------------
 ;;  Register lsp client
 ;; ---------------------------------------------------------------------
+(defun ccls--server-command ()
+  (funcall ccls-process-wrapper-function (cons ccls-executable ccls-args)))
 
 (defun ccls--suggest-project-root ()
   (and (memq major-mode '(c-mode c++-mode cuda-mode objc-mode))
@@ -130,7 +149,7 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
 
 (lsp-register-client
  (make-lsp-client
-  :new-connection (lsp-stdio-connection (lambda () (cons ccls-executable ccls-args)))
+  :new-connection (lsp-stdio-connection 'ccls--server-command)
   :major-modes '(c-mode c++-mode cuda-mode objc-mode)
   :server-id 'ccls
   :multi-root nil
