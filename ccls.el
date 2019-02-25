@@ -133,6 +133,11 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
                      (lsp--send-execute-command command arguments))))
     (xref--show-xrefs xrefs nil)))
 
+(cl-defmethod lsp-initialization-options ((_server (eql ccls)))
+  (if (functionp ccls-initialization-options)
+      (funcall ccls-initialization-options)
+    ccls-initialization-options))
+
 (advice-add 'lsp--suggest-project-root :before-until #'ccls--suggest-project-root)
 
 (lsp-register-client
@@ -144,7 +149,6 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   :notification-handlers
   (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
           ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
-  :initialization-options (lambda () ccls-initialization-options)
   :library-folders-fn nil))
 
 (provide 'ccls)
