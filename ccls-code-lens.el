@@ -67,7 +67,7 @@
     (define-key map [mouse-1]
       (lambda () (interactive)
         (when-let ((xrefs (lsp--locations-to-xref-items
-                           (lsp--execute-command command))))
+                           (lsp--send-execute-command (gethash "command" command) (gethash "arguments" command)))))
           (xref--show-xrefs xrefs nil))))
     (propertize (concat lpad (gethash "title" command) rpad)
                 'face 'ccls-code-lens-face

@@ -70,6 +70,7 @@
 ;;   Other ccls-specific methods
 ;; ---------------------------------------------------------------------
 ;;
+
 (defun ccls-info ()
   (lsp-request "$ccls/info" (make-hash-table)))
 
@@ -125,6 +126,12 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   (and (memq major-mode '(c-mode c++-mode cuda-mode objc-mode))
        (when-let (dir (locate-dominating-file default-directory ".ccls-root"))
          (expand-file-name dir))))
+
+(cl-defmethod lsp-execute-command
+  ((_server (eql ccls)) (command (eql ccls.xref)) arguments)
+  (when-let ((xrefs (lsp--locations-to-xref-items
+                     (lsp--send-execute-command command arguments))))
+    (xref--show-xrefs xrefs nil)))
 
 (advice-add 'lsp--suggest-project-root :before-until #'ccls--suggest-project-root)
 
