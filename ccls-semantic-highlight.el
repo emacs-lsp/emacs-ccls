@@ -171,7 +171,7 @@ If nil, disable semantic highlight."
 ;;   Semantic highlight
 ;; ---------------------------------------------------------------------
 
-(defvar-local ccls--inactive-overlays nil "Inactive overlays.")
+(defvar-local ccls--skipped-ranges-overlays nil "Skipped ranges overlays.")
 (defvar-local ccls--sem-overlays nil "Semantic highlight overlays.")
 
 (defun ccls--clear-sem-highlights ()
@@ -241,13 +241,12 @@ If nil, disable semantic highlight."
   "Publish semantic highlight information according to PARAMS."
   (when ccls-sem-highlight-method
     (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
-                 (buffer (find-buffer-visiting file))
-                 (symbols (gethash "symbols" params)))
+                 (buffer (find-buffer-visiting file)))
       (with-current-buffer buffer
         (with-silent-modifications
           (ccls--clear-sem-highlights)
           (let (ranges point0 point1 (line 0) overlays)
-            (seq-doseq (symbol symbols)
+            (seq-doseq (symbol (gethash "symbols" params))
               (-when-let* ((face (funcall ccls-sem-face-function symbol)))
                 (seq-doseq (range (gethash "ranges" symbol))
                   (-let (((&hash "L" start "R" end) range))
@@ -288,29 +287,25 @@ If nil, disable semantic highlight."
 ;;   Skipped ranges
 ;; ---------------------------------------------------------------------
 
-(defun ccls--read-range (range)
-  (cons (lsp--position-to-point (gethash "start" range))
-        (lsp--position-to-point (gethash "end" range))))
-
 (defun ccls--clear-skipped-ranges ()
   "Clean up overlays."
-  (while ccls--inactive-overlays
-    (delete-overlay (pop ccls--inactive-overlays))))
+  (while ccls--skipped-ranges-overlays
+    (delete-overlay (pop ccls--skipped-ranges-overlays))))
 
 (defun ccls--publish-skipped-ranges (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
   (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
-               (regions (mapcar 'ccls--read-range (gethash "skippedRanges" params)))
                (buffer (find-buffer-visiting file)))
     (with-current-buffer buffer
-       (save-excursion
+       (with-silent-modifications
          (ccls--clear-skipped-ranges)
          (when ccls-enable-skipped-ranges
            (overlay-recenter (point-max))
-           (seq-doseq (region regions)
-             (let ((ov (make-overlay (car region) (cdr region) buffer)))
+           (seq-doseq (range (gethash "skippedRanges" params) )
+             (let ((ov (make-overlay (lsp--position-to-point (gethash "start" range))
+                                     (lsp--position-to-point (gethash "end" range)) buffer)))
                (overlay-put ov 'face 'ccls-skipped-range-face)
                (overlay-put ov 'ccls-inactive t)
-               (push ov ccls--inactive-overlays))))))))
+               (push ov ccls--skipped-ranges-overlays))))))))
 
 (provide 'ccls-semantic-highlight)
