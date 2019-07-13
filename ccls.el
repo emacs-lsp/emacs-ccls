@@ -49,6 +49,12 @@
 ;;   Customization
 ;; ---------------------------------------------------------------------
 
+(defcustom ccls-library-directories '("/usr/include/")
+  "List of directories which will be considered to be libraries."
+  :risky t
+  :type '(repeat string)
+  :group 'ccls)
+
 (defcustom ccls-executable
   "ccls"
   "Path of the ccls executable."
@@ -146,7 +152,7 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
           ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
   :initialization-options (lambda () ccls-initialization-options)
-  :library-folders-fn nil))
+  :library-folders-fn (lambda (_workspace) ccls-library-directories)))
 
 (provide 'ccls)
 ;;; ccls.el ends here
