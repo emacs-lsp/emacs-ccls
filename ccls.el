@@ -75,9 +75,9 @@
 (defun ccls-info ()
   (lsp-request "$ccls/info" (make-hash-table)))
 
-(defun ccls-file-info ()
+(defun ccls-file-info (&optional extra)
   (lsp-request "$ccls/fileInfo"
-               `(:textDocument ,(lsp--text-document-identifier))))
+               (append (lsp--text-document-position-params) extra)))
 
 (defun ccls-preprocess-file (&optional output-buffer)
   "Preprocess selected buffer."
