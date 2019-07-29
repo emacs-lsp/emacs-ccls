@@ -114,7 +114,7 @@
        (propertize (format " (%s:%s)"
                            (file-name-nondirectory (car (ccls-tree-node-location node)))
                            (gethash "line" (cdr (ccls-tree-node-location node))))
-                   'face 'ccls-mode-line-face)))))
+                   'face 'ccls-tree-mode-line-face)))))
 
 (defun ccls-call-hierarchy (callee)
   (interactive "P")
