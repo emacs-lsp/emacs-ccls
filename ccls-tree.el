@@ -167,10 +167,10 @@
   (let* ((padding (if (= depth 0) "" (make-string (* 2 (- depth 1)) ?\ )))
          (symbol (if (= depth 0)
                      (if (ccls-tree-node-parent node)
-                         "⏴ "
+                         "◀ "
                        "")
                    (if (ccls-tree-node-has-children node)
-                       (if (ccls-tree-node-expanded node) "└⏷" "└⏵")
+                       (if (ccls-tree-node-expanded node) "▶ " "▼ ")
                      (if (eq number (- nchildren 1)) "└╸" "├╸")))))
     (concat padding (propertize symbol 'face 'ccls-tree-icon-face))))
 
