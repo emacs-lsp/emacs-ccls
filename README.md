@@ -19,13 +19,10 @@ It leverages [lsp-mode](https://github.com/emacs-lsp/lsp-mode), but also provide
 
 Refer to <https://github.com/MaskRay/ccls/wiki/lsp-mode> for details.
 
-![with lsp-ui-doc, enableComments](https://camo.githubusercontent.com/fe1e12f9be72c2295d732d6265b42bde0d121ee8/68747470733a2f2f707470622e70772f5a6275462e6a7067)
-![references + hydra](https://ptpb.pw/fhWh.jpg)
-![with company-lsp](https://ptpb.pw/lDaw.jpg)
-![with helm-xref, approximate workspace/symbol search](https://ptpb.pw/KOKn.jpg)
-
-`$ccls/member`
-![$ccls/member](https://ptpb.pw/iOSt.gif)
+<img src="https://raw.githubusercontent.com/MaskRay/ccls-static/master/emacs-ccls/lsp-ui-doc.webp" title="lsp-ui-doc" width=70%>
+<img src="https://raw.githubusercontent.com/MaskRay/ccls-static/master/emacs-ccls/reference-hydra.webp" title="references+hydra" width=70%>
+<img src="https://raw.githubusercontent.com/MaskRay/ccls-static/master/emacs-ccls/company-lsp.webp" title="company-lsp" width=50%>
+<img src="https://raw.githubusercontent.com/MaskRay/ccls-static/master/emacs-ccls/ccls-member.webp" title="$ccls/member" width=70%>
 
 `$ccls/call` (caller/callee, with hierarchical view)
 
@@ -33,7 +30,7 @@ Refer to <https://github.com/MaskRay/ccls/wiki/lsp-mode> for details.
 
 https://github.com/MaskRay/ccls/wiki/lsp-mode#ccls-navigate
 
-![ccls-navigate](https://camo.githubusercontent.com/7d9c5e9ad1297fa493d1256f9bc9824f56806d23/68747470733a2f2f707470622e70772f4858744d2e676966)
+![ccls-navigate](https://raw.githubusercontent.com/MaskRay/ccls-static/master/emacs-ccls/ccls-navigate.gif)
 
 ## License
 
