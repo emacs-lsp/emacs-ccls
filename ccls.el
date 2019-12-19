@@ -61,6 +61,12 @@
   :type '(repeat string)
   :group 'ccls)
 
+(defcustom ccls-library-folders-fn
+  nil
+  "Function which returns a list of library folders."
+  :type 'function
+  :group 'ccls)
+
 (defcustom ccls-initialization-options
   nil
   "initializationOptions"
@@ -146,7 +152,7 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
           ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
   :initialization-options (lambda () ccls-initialization-options)
-  :library-folders-fn nil))
+  :library-folders-fn ccls-library-folders-fn))
 
 (provide 'ccls)
 ;;; ccls.el ends here
