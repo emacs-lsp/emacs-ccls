@@ -92,6 +92,7 @@
                                (cond
                                 ((string= arg "-o") (cl-incf i))
                                 ((string-match-p "\\`-o.+" arg))
+                                ((string-match-p "\\`-working-directory=.+" arg))
                                 (t (push arg ret))))
                              (cl-incf i))
                            (nreverse ret))))
