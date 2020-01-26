@@ -38,7 +38,6 @@
 (require 'ccls-common)
 (require 'ccls-semantic-highlight)
 (require 'ccls-code-lens)
-(require 'ccls-tree)
 (require 'ccls-call-hierarchy)
 (require 'ccls-inheritance-hierarchy)
 (require 'ccls-member-hierarchy)
