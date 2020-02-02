@@ -73,6 +73,12 @@
   :group 'ccls)
 (put 'ccls-initialization-options 'safe-local-variable 'listp)
 
+(defcustom ccls-root-files
+  '(".ccls-root")
+  "A list of files considered to mark the root of a ccls project."
+  :type '(repeat string)
+  :group 'ccls)
+
 ;; ---------------------------------------------------------------------
 ;;   Other ccls-specific methods
 ;; ---------------------------------------------------------------------
@@ -131,7 +137,8 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
 
 (defun ccls--suggest-project-root ()
   (and (memq major-mode '(c-mode c++-mode cuda-mode objc-mode))
-       (when-let (dir (locate-dominating-file default-directory ".ccls-root"))
+       (when-let (dir (cl-some  #'(lambda (file) (locate-dominating-file default-directory file))
+                                ccls-root-files))
          (expand-file-name dir))))
 
 (cl-defmethod lsp-execute-command
