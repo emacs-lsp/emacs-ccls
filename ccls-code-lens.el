@@ -68,7 +68,7 @@
       (lambda () (interactive)
         (when-let ((xrefs (lsp--locations-to-xref-items
                            (lsp--send-execute-command (gethash "command" command) (gethash "arguments" command)))))
-          (xref--show-xrefs xrefs nil))))
+          (xref--show-xrefs (if (functionp 'xref--create-fetcher)(-const xrefs) xrefs) nil))))
     (propertize (concat lpad (gethash "title" command) rpad)
                 'face 'ccls-code-lens-face
                 'mouse-face 'ccls-code-lens-mouse-face
