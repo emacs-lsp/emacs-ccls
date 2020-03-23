@@ -24,7 +24,7 @@
 ;;; Code:
 
 (require 'cc-mode)
-(require 'lsp)
+(require 'lsp-mode)
 (require 'cl-lib)
 (require 'seq)
 (require 'subr-x)
