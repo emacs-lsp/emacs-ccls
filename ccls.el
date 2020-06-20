@@ -4,10 +4,10 @@
 ;; Copyright (C) 2018 Fangrui Song
 
 ;; Author: Tobias Pisani, Fangrui Song
-;; Package-Version: 20180929.1
+;; Package-Version: 20200621
 ;; Version: 0.1
 ;; Homepage: https://github.com/MaskRay/emacs-ccls
-;; Package-Requires: ((emacs "25.1") (lsp-mode "4.2") (dash "0.14"))
+;; Package-Requires: ((emacs "25.1") (lsp-mode "6.3.1") (dash "2.14.1"))
 ;; Keywords: languages, lsp, c++
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -84,6 +84,10 @@
 ;; ---------------------------------------------------------------------
 ;;
 
+(eval-when-compile
+  (lsp-interface
+   (CclsQueryFileDef (:path :args :language :dependencies :includes :skipped-ranges) nil)))
+
 (defun ccls-info ()
   (lsp-request "$ccls/info" (make-hash-table)))
 
@@ -97,7 +101,7 @@
   (lsp--cur-workspace-check)
   (-when-let* ((mode major-mode)
                (info (ccls-file-info))
-               (args (seq-into (gethash "args" info) 'vector))
+               (args (seq-into (lsp:ccls-query-file-def-args info) 'vector))
                (new-args (let ((i 0) ret)
                            (while (< i (length args))
                              (let ((arg (elt args i)))

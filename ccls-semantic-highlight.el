@@ -1,7 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
-;; Copyright (C) 2018 Fangrui Song
+;; Copyright (C) 2018-2020 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -174,6 +174,14 @@ If nil, disable semantic highlight."
 (defvar-local ccls--skipped-ranges-overlays nil "Skipped ranges overlays.")
 (defvar-local ccls--sem-overlays nil "Semantic highlight overlays.")
 
+(eval-and-compile
+  (lsp-interface
+   (CclsLR (:L :R) nil)
+   (CclsSemanticHighlight (:uri :symbols) nil)
+   (CclsSkippedRanges (:uri :skippedRanges) nil)))
+(lsp-interface
+ (CclsSemanticHighlightSymbol (:id :parentKind :kind :storage :ranges) nil))
+
 (defun ccls--clear-sem-highlights ()
   "."
   (pcase ccls-sem-highlight-method
@@ -186,8 +194,7 @@ If nil, disable semantic highlight."
 (defun ccls-sem--default-face (symbol)
   "Get semantic highlight face of SYMBOL."
   ;; https://github.com/ccls-project/ccls/blob/master/src/symbol.h
-  (-let* (((&hash "type" type "kind" kind "storage" storage
-                  "parentKind" parent-kind "id" id) symbol)
+  (-let* (((&CclsSemanticHighlightSymbol :id :parent-kind :kind :storage) symbol)
          (fn0 (lambda (faces lo0 hi0)
                 (let* ((n (length faces))
                        (lo (/ (* lo0 n) 1000))
@@ -232,25 +239,23 @@ If nil, disable semantic highlight."
       (22 `(,(funcall fn0 ccls-sem-variable-faces 0 1000)
             ccls-sem-member-face)) ; EnumMember
 
-      (_ (pcase type
-           (0 (funcall fn ccls-sem-type-faces))
-           (1 (funcall fn ccls-sem-function-faces))
-           (_ (funcall fn ccls-sem-variable-faces)))))))
+      (_ (funcall fn ccls-sem-variable-faces)))))
 
 (defun ccls--publish-semantic-highlight (_workspace params)
   "Publish semantic highlight information according to PARAMS."
   (when ccls-sem-highlight-method
-    (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
+    (-when-let* (((&CclsSemanticHighlight :uri :symbols) params)
+                 (file (lsp--uri-to-path uri))
                  (buffer (find-buffer-visiting file)))
       (with-current-buffer buffer
         (with-silent-modifications
           (ccls--clear-sem-highlights)
           (let (ranges point0 point1 (line 0) overlays)
-            (seq-doseq (symbol (gethash "symbols" params))
+            (seq-doseq (symbol symbols)
               (-when-let* ((face (funcall ccls-sem-face-function symbol)))
-                (seq-doseq (range (gethash "ranges" symbol))
-                  (-let (((&hash "L" start "R" end) range))
-                    (push (list (1+ start) (1+ end) face) overlays)))))
+                (seq-doseq (range (lsp:ccls-semantic-highlight-symbol-ranges symbol))
+                  (-let (((&CclsLR :l :r) range))
+                    (push (list (1+ l) (1+ r) face) overlays)))))
             ;; The server guarantees the ranges are non-overlapping.
             (setq overlays (sort overlays (lambda (x y) (< (car x) (car y)))))
             (pcase ccls-sem-highlight-method
@@ -294,18 +299,19 @@ If nil, disable semantic highlight."
 
 (defun ccls--publish-skipped-ranges (_workspace params)
   "Put overlays on (preprocessed) inactive regions according to PARAMS."
-  (-when-let* ((file (lsp--uri-to-path (gethash "uri" params)))
-               (buffer (find-buffer-visiting file)))
-    (with-current-buffer buffer
+  (-let* (((&CclsSkippedRanges :uri :skipped-ranges) params)
+          (file (lsp--uri-to-path uri)))
+   (-when-let (buffer (find-buffer-visiting file))
+     (with-current-buffer buffer
        (with-silent-modifications
          (ccls--clear-skipped-ranges)
          (when ccls-enable-skipped-ranges
            (overlay-recenter (point-max))
-           (seq-doseq (range (gethash "skippedRanges" params) )
-             (let ((ov (make-overlay (lsp--position-to-point (gethash "start" range))
-                                     (lsp--position-to-point (gethash "end" range)) buffer)))
+           (seq-doseq (range skipped-ranges)
+             (let ((ov (make-overlay (lsp--position-to-point (lsp:range-start range))
+                                     (lsp--position-to-point (lsp:range-end range)) buffer)))
                (overlay-put ov 'face 'ccls-skipped-range-face)
                (overlay-put ov 'ccls-inactive t)
-               (push ov ccls--skipped-ranges-overlays))))))))
+               (push ov ccls--skipped-ranges-overlays)))))))))
 
 (provide 'ccls-semantic-highlight)
