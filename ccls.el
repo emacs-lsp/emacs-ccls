@@ -84,6 +84,10 @@
 ;; ---------------------------------------------------------------------
 ;;
 
+(eval-when-compile
+  (lsp-interface
+   (CclsQueryFileDef (:path :args :language :dependencies :includes :skipped-ranges) nil)))
+
 (defun ccls-info ()
   (lsp-request "$ccls/info" (make-hash-table)))
 
@@ -97,7 +101,7 @@
   (lsp--cur-workspace-check)
   (-when-let* ((mode major-mode)
                (info (ccls-file-info))
-               (args (seq-into (gethash "args" info) 'vector))
+               (args (seq-into (lsp:ccls-query-file-def-args info) 'vector))
                (new-args (let ((i 0) ret)
                            (while (< i (length args))
                              (let ((arg (elt args i)))

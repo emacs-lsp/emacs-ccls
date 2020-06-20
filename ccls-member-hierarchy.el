@@ -1,7 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
-;; Copyright (C) 2018 Fangrui Song
+;; Copyright (C) 2018-2020 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -40,15 +40,19 @@
   field-name
   id)
 
+(eval-when-compile
+  (lsp-interface
+   (CclsMember (:id :name :fieldName :location :numChildren :children) nil)))
+
 (defun ccls-member-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
-  (-let* (((&hash "location" location "numChildren" nchildren "name" name "fieldName" field-name "id" id "children" children) data)
-          (filename (lsp--uri-to-path (gethash "uri" location)))
+  (-let* (((&CclsMember :id :name :field-name :location :num-children :children) data)
+          (filename (lsp--uri-to-path (lsp:location-uir location)))
           (node
            (make-ccls-tree-node
-            :location (cons filename (gethash "start" (gethash "range" location)))
+            :location (cons filename (lsp:range-start (lsp:location-range "range" location)))
             ;; With a little bit of luck, this only filters out enums
-            :has-children (not (or (>= 0 nchildren)
+            :has-children (not (or (>= 0 num-children)
                                    (null parent)
                                    (equal id (ccls-member-hierarchy-node-id (ccls-tree-node-data parent)))))
             :parent parent
@@ -67,8 +71,7 @@
   "."
   (let ((id (ccls-member-hierarchy-node-id (ccls-tree-node-data node))))
     (--map (ccls-member-hierarchy--read-node it node)
-           (gethash
-            "children"
+           (lsp:ccls-member-children
             (lsp-request "$ccls/member"
                          `(:id ,id
                                :levels ,ccls-tree-initial-levels

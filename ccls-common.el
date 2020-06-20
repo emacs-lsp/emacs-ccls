@@ -24,6 +24,7 @@
 ;;; Code:
 
 (require 'cc-mode)
+(require 'lsp-protocol)
 (require 'lsp-mode)
 (require 'cl-lib)
 (require 'seq)

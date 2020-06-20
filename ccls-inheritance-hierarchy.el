@@ -1,7 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
-;; Copyright (C) 2018 Fangrui Song
+;; Copyright (C) 2018-2020 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -42,15 +42,18 @@
   kind
   name)
 
+(eval-when-compile
+  (lsp-interface
+   (CclsInheritance (:id :kind :name :location :numChildren :children) nil)))
+
 (defun ccls-inheritance-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
-  (-let* ((location (gethash "location" data '(nil . nil)))
-          (filename (lsp--uri-to-path (gethash "uri" location)))
-          ((&hash "id" id "kind" kind "name" name) data)
+  (-let* (((&CclsInheritance :id :kind :name :location :num-children :children) data)
+          (filename (lsp--uri-to-path (lsp:location-uri location)))
           (node
            (make-ccls-tree-node
-            :location (cons filename (gethash "start" (gethash "range" location)))
-            :has-children (< 0 (gethash "numChildren" data))
+            :location (cons filename (lsp:range-start (lsp:location-range location)))
+            :has-children (< 0 num-children)
             :parent parent
             :expanded nil
             :children nil
@@ -60,7 +63,7 @@
                    :name name))))
     (setf (ccls-tree-node-children node)
           (--map (ccls-inheritance-hierarchy--read-node it node)
-                 (gethash "children" data)))
+                 (lsp:ccls-inheritance-children data)))
     node))
 
 (defun ccls-inheritance-hierarchy--request-children (derived node)
@@ -68,15 +71,15 @@
   (let ((id (ccls-inheritance-hierarchy-node-id (ccls-tree-node-data node)))
         (kind (ccls-inheritance-hierarchy-node-kind (ccls-tree-node-data node))))
     (--map (ccls-inheritance-hierarchy--read-node it node)
-           (gethash "children"
-                    (lsp-request
-                     "$ccls/inheritance"
-                     `(:id ,id :kind ,kind
-                           :derived ,derived
-                           :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
-                           :levels ,ccls-tree-initial-levels
-                           :hierarchy t
-                           ))))))
+           (lsp:ccls-inheritance-children
+            (lsp-request
+             "$ccls/inheritance"
+             `(:id ,id :kind ,kind
+               :derived ,derived
+               :qualified ,(if ccls-inheritance-hierarchy-qualified t :json-false)
+               :levels ,ccls-tree-initial-levels
+               :hierarchy t
+               ))))))
 
 (defun ccls-inheritance-hierarchy--request-init (derived)
   "."

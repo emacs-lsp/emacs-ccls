@@ -1,7 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
-;; Copyright (C) 2018 Fangrui Song
+;; Copyright (C) 2018-2020 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -59,14 +59,17 @@
   name
   call-type)
 
+(eval-when-compile
+  (lsp-interface
+   (CclsCall (:id :name :location :callType :numChildren :children) nil)))
+
 (defun ccls-call-hierarchy--read-node (data &optional parent)
   "Construct a call tree node from hashmap DATA and give it the parent PARENT"
-  (-let* ((location (gethash "location" data))
-          (filename (lsp--uri-to-path (gethash "uri" location)))
-          ((&hash "id" id "name" name "callType" call-type) data))
+  (-let* (((&CclsCall :id :name :location :call-type :num-children) data)
+          (filename (lsp--uri-to-path (lsp:location-uri location))))
     (make-ccls-tree-node
-     :location (cons filename (gethash "start" (gethash "range" location)))
-     :has-children (< 0 (gethash "numChildren" data))
+     :location (cons filename (lsp:range-start (lsp:location-range location)))
+     :has-children (< 0 num-children)
      :parent parent
      :expanded nil
      :children nil
@@ -79,15 +82,15 @@
   "."
   (let ((id (ccls-call-hierarchy-node-id (ccls-tree-node-data node))))
     (--map (ccls-call-hierarchy--read-node it node)
-           (gethash "children"
-                    (lsp-request
-                     "$ccls/call"
-                     `(:id ,id
-                           :callee ,callee
-                           :callType 3
-                           :levels ,ccls-tree-initial-levels
-                           :qualified ,(if ccls-call-hierarchy-qualified t :json-false)
-                           :hierarchy t))))))
+           (lsp:ccls-call-children
+            (lsp-request
+             "$ccls/call"
+             `(:id ,id
+               :callee ,callee
+               :callType 3
+               :levels ,ccls-tree-initial-levels
+               :qualified ,(if ccls-call-hierarchy-qualified t :json-false)
+               :hierarchy t))))))
 
 (defun ccls-call-hierarchy--request-init (callee)
   "."
@@ -113,7 +116,7 @@
                            ('2 'ccls-call-hierarchy-node-derived-face)))
        (propertize (format " (%s:%s)"
                            (file-name-nondirectory (car (ccls-tree-node-location node)))
-                           (gethash "line" (cdr (ccls-tree-node-location node))))
+                           (lsp:position-line (cdr (ccls-tree-node-location node))))
                    'face 'ccls-tree-mode-line-face)))))
 
 (defun ccls-call-hierarchy (callee)
