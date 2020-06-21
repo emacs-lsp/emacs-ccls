@@ -1,7 +1,7 @@
 ;;; -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2017 Tobias Pisani
-;; Copyright (C) 2018 Fangrui Song
+;; Copyright (C) 2018-2020 Fangrui Song
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -149,9 +149,9 @@
    (ccls-code-lens-mode
     (when (lsp-workspaces)
       (ccls-request-code-lens)
-      (add-hook 'lsp-after-diagnostics-hook 'ccls-code-lens--request-when-idle t t)))
+      (add-hook 'lsp-diagnostics-updated-hook 'ccls-code-lens--request-when-idle t t)))
    (t
-    (remove-hook 'lsp-after-diagnostics-hook 'ccls-code-lens--request-when-idle t)
+    (remove-hook 'lsp-diagnostics-updated-hook 'ccls-code-lens--request-when-idle t)
     (ccls-clear-code-lens))))
 
 (provide 'ccls-code-lens)
