@@ -178,9 +178,9 @@ If nil, disable semantic highlight."
   (lsp-interface
    (CclsLR (:L :R) nil)
    (CclsSemanticHighlight (:uri :symbols) nil)
-   (CclsSkippedRanges (:uri :skippedRanges) nil)))
-(lsp-interface
- (CclsSemanticHighlightSymbol (:id :parentKind :kind :storage :ranges) nil))
+   (CclsSkippedRanges (:uri :skippedRanges) nil))
+  (lsp-interface
+   (CclsSemanticHighlightSymbol (:id :parentKind :kind :storage :ranges) nil)))
 
 (defun ccls--clear-sem-highlights ()
   "."
