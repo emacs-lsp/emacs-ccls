@@ -84,7 +84,7 @@
 ;; ---------------------------------------------------------------------
 ;;
 
-(eval-when-compile
+(eval-and-compile
   (lsp-interface
    (CclsQueryFileDef (:path :args :language :dependencies :includes :skipped-ranges) nil)))
 

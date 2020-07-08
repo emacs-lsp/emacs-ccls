@@ -42,7 +42,7 @@
   kind
   name)
 
-(eval-when-compile
+(eval-and-compile
   (lsp-interface
    (CclsInheritance (:id :kind :name :location :numChildren :children) nil)))
 

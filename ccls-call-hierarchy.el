@@ -59,7 +59,7 @@
   name
   call-type)
 
-(eval-when-compile
+(eval-and-compile
   (lsp-interface
    (CclsCall (:id :name :location :callType :numChildren :children) nil)))
 
