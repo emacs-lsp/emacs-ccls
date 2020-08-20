@@ -40,7 +40,7 @@
   field-name
   id)
 
-(eval-when-compile
+(eval-and-compile
   (lsp-interface
    (CclsMember (:id :name :fieldName :location :numChildren :children) nil)))
 
