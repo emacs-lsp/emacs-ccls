@@ -145,9 +145,9 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
                                 ccls-root-files))
          (expand-file-name dir))))
 
-(lsp-defun ccls--show-xrefs ((&Command :arguments?))
+(lsp-defun ccls--show-xrefs ((&Command :command :arguments?))
   (when-let ((xrefs (lsp--locations-to-xref-items
-                     (lsp--send-execute-command command arguments))))
+                     (lsp--send-execute-command command arguments?))))
     (lsp-show-xrefs xrefs nil t)))
 
 (advice-add 'lsp--suggest-project-root :before-until #'ccls--suggest-project-root)
