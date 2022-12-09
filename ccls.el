@@ -149,7 +149,7 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   ((_server (eql ccls)) (command (eql ccls.xref)) arguments)
   (when-let ((xrefs (lsp--locations-to-xref-items
                      (lsp--send-execute-command "ccls.xref" arguments))))
-    (xref--show-xrefs xrefs nil)))
+    (lsp-show-xrefs xrefs nil t)))
 
 (advice-add 'lsp--suggest-project-root :before-until #'ccls--suggest-project-root)
 
