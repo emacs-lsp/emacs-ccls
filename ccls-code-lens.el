@@ -96,7 +96,7 @@
     (goto-char 1)
     (let ((line 0) (col 0) ov)
       (seq-doseq (lens result)
-        (-let (([l0 c0 l1 c1 command?] lens) (pad " "))
+        (-let (([l0 c0 l1 c1 command?] lens))
           (pcase ccls-code-lens-position
             ('end
              (forward-line (- l0 line))

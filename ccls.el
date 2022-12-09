@@ -70,7 +70,8 @@
 (defcustom ccls-initialization-options
   nil
   "initializationOptions"
-  :group 'ccls)
+  :group 'ccls
+  :type 'alist)
 (put 'ccls-initialization-options 'safe-local-variable 'listp)
 
 (defcustom ccls-root-files

@@ -250,7 +250,7 @@ If nil, disable semantic highlight."
       (with-current-buffer buffer
         (with-silent-modifications
           (ccls--clear-sem-highlights)
-          (let (ranges point0 point1 (line 0) overlays)
+          (let (overlays)
             (seq-doseq (symbol symbols)
               (-when-let* ((face (funcall ccls-sem-face-function symbol)))
                 (seq-doseq (range (lsp:ccls-semantic-highlight-symbol-ranges symbol))
