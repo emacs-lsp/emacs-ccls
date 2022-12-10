@@ -2,9 +2,14 @@
          "0.1"
          "ccls client for lsp-mode")
 
+(website-url "https://github.com/MaskRay/emacs-ccls")
+(keywords "languages" "lsp" "c++")
+
 (package-file "ccls.el")
 
 (files "*.el")
+
+(script "test" "echo \"Error: no test specified\" && exit 1")
 
 (source "gnu")
 (source "melpa")
