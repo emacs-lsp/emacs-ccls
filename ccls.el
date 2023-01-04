@@ -156,7 +156,7 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
 (lsp-register-client
  (make-lsp-client
   :new-connection (lsp-stdio-connection (lambda () (cons ccls-executable ccls-args)))
-  :major-modes '(c-mode c++-mode cuda-mode objc-mode)
+  :activation-fn (lsp-activate-on "c" "cpp" "objective-c" "cuda")
   :server-id 'ccls
   :multi-root nil
   :notification-handlers
