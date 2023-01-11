@@ -69,8 +69,7 @@
       (lambda () (interactive)
         (when-let ((xrefs (lsp--locations-to-xref-items
                            (lsp--send-execute-command command arguments?))))
-          ;; xref--show-xrefs takes a function since Emacs 27.
-          (xref--show-xrefs (if (functionp 'xref--create-fetcher) (lambda () xrefs) xrefs) nil))))
+          (lsp-show-xrefs xrefs nil t))))
     (propertize (concat lpad title rpad)
                 'face 'ccls-code-lens-face
                 'mouse-face 'ccls-code-lens-mouse-face
@@ -97,7 +96,7 @@
     (goto-char 1)
     (let ((line 0) (col 0) ov)
       (seq-doseq (lens result)
-        (-let (([l0 c0 l1 c1 command?] lens) (pad " "))
+        (-let (([l0 c0 l1 c1 command?] lens))
           (pcase ccls-code-lens-position
             ('end
              (forward-line (- l0 line))

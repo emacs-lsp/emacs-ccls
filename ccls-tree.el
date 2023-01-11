@@ -273,7 +273,7 @@
       (unless lsp--buffer-workspaces
         (setq lsp--buffer-workspaces workspaces)
         (lsp-mode 1)
-        (dolist (workspace cur-buffer-workspaces)
+        (dolist (workspace workspaces)
           (lsp--open-in-workspace workspace)))
       (goto-char (lsp--position-to-point (cdr (ccls-tree-node-location node))))
       (recenter)
