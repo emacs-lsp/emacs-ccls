@@ -1,3 +1,4 @@
 .eask
 /dist
 *.elc
+*autoloads*
