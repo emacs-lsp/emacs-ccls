@@ -164,7 +164,8 @@ DIRECTION can be \"D\", \"L\", \"R\" or \"U\"."
   (lsp-ht ("$ccls/publishSkippedRanges" #'ccls--publish-skipped-ranges)
           ("$ccls/publishSemanticHighlight" #'ccls--publish-semantic-highlight))
   :initialization-options (lambda () ccls-initialization-options)
-  :library-folders-fn ccls-library-folders-fn))
+  :library-folders-fn (lambda (&rest args)
+                        (if ccls-library-folders-fn (apply ccls-library-folders-fn args)))))
 
 (provide 'ccls)
 ;;; ccls.el ends here
