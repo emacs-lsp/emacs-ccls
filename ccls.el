@@ -6,7 +6,7 @@
 ;; Author: Tobias Pisani, Fangrui Song
 ;; Package-Version: 20200621
 ;; Version: 0.1
-;; Homepage: https://github.com/MaskRay/emacs-ccls
+;; Homepage: https://github.com/emacs-lsp/emacs-ccls
 ;; Package-Requires: ((emacs "27.1") (lsp-mode "6.3.1") (dash "2.14.1"))
 ;; Keywords: languages, lsp, c++
 

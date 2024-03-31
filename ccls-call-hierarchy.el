@@ -64,7 +64,7 @@
    (CclsCall (:id :name :location :callType :numChildren :children) nil)))
 
 (defun ccls-call-hierarchy--read-node (data &optional parent)
-  "Construct a call tree node from hashmap DATA and give it the parent PARENT"
+  "Construct a call tree node from hashmap DATA and give it the parent PARENT."
   (-let* (((&CclsCall :id :name :location :call-type :num-children) data)
           (filename (lsp--uri-to-path (lsp:location-uri location))))
     (make-ccls-tree-node

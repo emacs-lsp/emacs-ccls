@@ -106,7 +106,7 @@
                                       (ccls--make-code-lens-string (if (/= c0 col) "|" " ") command?)))
                (when ov
                  (overlay-put ov 'display (concat (overlay-get ov 'display) "\n")))
-               (let ((p (point-at-eol)))
+               (let ((p (line-end-position)))
                  (setq ov (make-overlay p (1+ p) nil 'front-advance))
                  (overlay-put ov 'ccls-code-lens t)
                  (overlay-put ov 'display (ccls--make-code-lens-string " " command?))))
