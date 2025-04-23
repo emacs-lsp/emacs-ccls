@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "ccls"
          "0.1"
          "ccls client for lsp-mode")
