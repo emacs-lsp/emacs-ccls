@@ -1,4 +1,5 @@
 [![MELPA](https://melpa.org/packages/ccls-badge.svg)](https://melpa.org/#/ccls)
+[![CI](https://github.com/emacs-lsp/emacs-ccls/actions/workflows/test.yml/badge.svg)](https://github.com/emacs-lsp/emacs-ccls/actions/workflows/test.yml)
 
 # emacs-ccls
 
