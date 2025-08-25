@@ -2,6 +2,7 @@
 
 ;; Copyright (C) 2017 Tobias Pisani
 ;; Copyright (C) 2018 Fangrui Song
+;; Copyright (C) 2020-2025  emacs-lsp maintainers
 
 ;; Author: Tobias Pisani, Fangrui Song
 ;; Package-Version: 20200621
